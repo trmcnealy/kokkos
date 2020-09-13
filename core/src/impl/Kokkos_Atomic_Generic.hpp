@@ -499,7 +499,7 @@ KOKKOS_INLINE_FUNCTION T atomic_rshift_fetch(volatile T* const dest,
                                  dest, val);
 }
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 template <typename T>
 KOKKOS_INLINE_FUNCTION T atomic_add_fetch(volatile T* const dest, const T val) {
   return Impl::atomic_oper_fetch(Impl::AddOper<T, const T>(), dest, val);

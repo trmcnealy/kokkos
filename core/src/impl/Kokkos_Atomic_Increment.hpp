@@ -91,7 +91,7 @@ KOKKOS_INLINE_FUNCTION void atomic_increment<short>(volatile short* a) {
 #endif
 }
 
-#ifndef _WIN32
+#ifndef _WINDOWS
 template <>
 KOKKOS_INLINE_FUNCTION void atomic_increment<int>(volatile int* a) {
 #if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64) && \

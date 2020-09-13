@@ -53,7 +53,9 @@
 #include <functional>
 #include <list>
 #include <cerrno>
-#ifndef _WIN32
+#ifdef _WINDOWS
+#include <processthreadsapi.h>
+#else
 #include <unistd.h>
 #endif
 
@@ -551,7 +553,7 @@ void warn_deprecated_command_line_argument(std::string deprecated,
 }
 
 unsigned get_process_id() {
-#ifdef _WIN32
+#ifdef _WINDOWS
   return unsigned(GetCurrentProcessId());
 #else
   return unsigned(getpid());

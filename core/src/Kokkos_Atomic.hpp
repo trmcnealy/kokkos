@@ -73,13 +73,13 @@
 #include <impl/Kokkos_Traits.hpp>
 
 //----------------------------------------------------------------------------
-#if defined(_WIN32)
+#if (defined(_WIN32) || defined(_WIN64) || defined(_WINDOWS) || defined(_MSC_VER) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND))
 #define KOKKOS_ENABLE_WINDOWS_ATOMICS
 #if defined(KOKKOS_ENABLE_CUDA)
 #define KOKKOS_ENABLE_CUDA_ATOMICS
 #endif
 #else
-#if defined(KOKKOS_ENABLE_CUDA)
+#if defined(KOKKOS_ENABLE_CUDA) && defined(__CUDA_ARCH__)
 
 // Compiling NVIDIA device code, must use Cuda atomics:
 
@@ -190,7 +190,7 @@ extern KOKKOS_INLINE_FUNCTION void unlock_address_rocm_space(void* ptr);
 #include <HIP/Kokkos_HIP_Atomic.hpp>
 #endif
 
-#ifdef _WIN32
+#if defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 #include "impl/Kokkos_Atomic_Windows.hpp"
 #endif
 //----------------------------------------------------------------------------

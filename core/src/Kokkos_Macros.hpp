@@ -107,6 +107,12 @@
 #define KOKKOS_ENABLE_CXX11_DISPATCH_LAMBDA
 
 #if defined(KOKKOS_ENABLE_CUDA) && defined(__CUDACC__)
+
+#if defined(_WINDOWS) && defined(__clang__)
+#include <cuda_wrappers/new>
+#endif
+
+
 // Compiling with a CUDA compiler.
 //
 //  Include <cuda.h> to pick up the CUDA_VERSION macro defined as:
@@ -118,7 +124,7 @@
 #include <cuda_runtime.h>
 #include <cuda.h>
 
-#if defined(_WIN32)
+#if defined(_MSC_VER)
 #define KOKKOS_IMPL_WINDOWS_CUDA
 #endif
 
@@ -151,9 +157,11 @@
 
 #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 700) && \
     !defined(KOKKOS_IMPL_WINDOWS_CUDA)
+#pragma message("KOKKOS_DISABLE_CUDA_ASM")
 // PTX atomics with memory order semantics are only available on volta and later
 #if !defined(KOKKOS_DISABLE_CUDA_ASM)
 #if !defined(KOKKOS_ENABLE_CUDA_ASM)
+#pragma message("KOKKOS_ENABLE_CUDA_ASM")
 #define KOKKOS_ENABLE_CUDA_ASM
 #if !defined(KOKKOS_DISABLE_CUDA_ASM_ATOMICS)
 #define KOKKOS_ENABLE_CUDA_ASM_ATOMICS
@@ -344,16 +352,16 @@
 #endif
 #endif
 
-#if !defined(KOKKOS_ENABLE_ASM) && !defined(_WIN32)
+#if !defined(KOKKOS_ENABLE_ASM) && !defined(_MSC_VER)
 #define KOKKOS_ENABLE_ASM 1
 #endif
 
 #if !defined(KOKKOS_IMPL_FORCEINLINE_FUNCTION)
-#if !defined(_WIN32)
+#if !defined(_MSC_VER)
 #define KOKKOS_IMPL_FORCEINLINE_FUNCTION inline __attribute__((always_inline))
 #define KOKKOS_IMPL_FORCEINLINE __attribute__((always_inline))
 #else
-#define KOKKOS_IMPL_FORCEINLINE_FUNCTION inline
+#define KOKKOS_IMPL_FORCEINLINE_FUNCTION __forceinline
 #endif
 #endif
 
@@ -664,7 +672,7 @@
 
 #if (defined(KOKKOS_COMPILER_GNU) || defined(KOKKOS_COMPILER_CLANG) ||  \
      defined(KOKKOS_COMPILER_INTEL) || defined(KOKKOS_COMPILER_PGI)) && \
-    !defined(KOKKOS_COMPILER_MSVC)
+    !defined(KOKKOS_COMPILER_MSVC) && !defined(__MINGW64__)
 #define KOKKOS_IMPL_ENABLE_STACKTRACE
 #define KOKKOS_IMPL_ENABLE_CXXABI
 #endif

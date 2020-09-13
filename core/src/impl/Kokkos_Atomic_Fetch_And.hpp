@@ -118,6 +118,58 @@ inline unsigned long int atomic_fetch_and(
 #endif
 
 //----------------------------------------------------------------------------
+#        elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS) 
+//&& !defined(__CUDA_ARCH__)
+
+    __inline int atomic_fetch_and(volatile int* const dest, const int& val)
+    {
+#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#            endif
+        return InterlockedAnd(dest, val);
+    }
+
+    __inline unsigned int atomic_fetch_and(volatile unsigned int* const dest, const unsigned int& val)
+    {
+#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#            endif
+        return InterlockedAnd(dest, val);
+    }
+
+    __inline long atomic_fetch_and(volatile long* const dest, const long& val)
+    {
+#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#            endif
+        return InterlockedAnd(dest, val);
+    }
+
+    __inline long long atomic_fetch_and(volatile long long* const dest, const long long& val)
+    {
+#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#            endif
+        return InterlockedAnd(dest, val);
+    }
+
+    __inline unsigned long atomic_fetch_and(volatile unsigned long* const dest, const unsigned long& val)
+    {
+#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#            endif
+        return InterlockedAnd(dest, val);
+    }
+
+    __inline unsigned long long atomic_fetch_and(volatile unsigned long long* const dest, const unsigned long long& val)
+    {
+#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#            endif
+        return InterlockedAnd(dest, val);
+    }
+
+//----------------------------------------------------------------------------
 
 #elif defined(KOKKOS_ENABLE_OPENMP_ATOMICS)
 

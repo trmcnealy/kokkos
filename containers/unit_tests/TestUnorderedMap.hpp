@@ -176,7 +176,7 @@ struct TestFind {
 
 // MSVC reports a syntax error for this test.
 // WORKAROUND MSVC
-#ifndef _WIN32
+#ifndef _MSC_VER
 template <typename Device>
 void test_insert(uint32_t num_nodes, uint32_t num_inserts,
                  uint32_t num_duplicates, bool near) {

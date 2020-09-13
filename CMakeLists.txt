@@ -116,10 +116,10 @@ set(Kokkos_VERSION_PATCH 0)
 set(Kokkos_VERSION "${Kokkos_VERSION_MAJOR}.${Kokkos_VERSION_MINOR}.${Kokkos_VERSION_PATCH}")
 math(EXPR KOKKOS_VERSION "${Kokkos_VERSION_MAJOR} * 10000 + ${Kokkos_VERSION_MINOR} * 100 + ${Kokkos_VERSION_PATCH}")
 
-IF(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")
-  MESSAGE(STATUS "Setting policy CMP0074 to use <Package>_ROOT variables")
-  CMAKE_POLICY(SET CMP0074 NEW)
-ENDIF()
+# IF(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.12.0")
+  # MESSAGE(STATUS "Setting policy CMP0074 to use <Package>_ROOT variables")
+  # CMAKE_POLICY(SET CMP0074 NEW)
+# ENDIF()
 
 # Load either the real TriBITS or a TriBITS wrapper
 # for certain utility functions that are universal (like GLOBAL_SET)
@@ -171,9 +171,9 @@ KOKKOS_SETUP_BUILD_ENVIRONMENT()
 
 OPTION(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 # Workaround for building position independent code.
-IF(BUILD_SHARED_LIBS)
-  SET(CMAKE_POSITION_INDEPENDENT_CODE ON)
-ENDIF()
+# IF(BUILD_SHARED_LIBS)
+   SET(CMAKE_POSITION_INDEPENDENT_CODE OFF)
+# ENDIF()
 
 SET(KOKKOS_EXT_LIBRARIES Kokkos::kokkos Kokkos::kokkoscore Kokkos::kokkoscontainers Kokkos::kokkosalgorithms)
 SET(KOKKOS_INT_LIBRARIES kokkos kokkoscore kokkoscontainers kokkosalgorithms)
