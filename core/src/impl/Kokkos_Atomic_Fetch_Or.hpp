@@ -55,7 +55,8 @@ namespace Kokkos {
 //----------------------------------------------------------------------------
 
 #if defined(KOKKOS_ENABLE_CUDA)
-#if defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)
+#if (defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)) && \
+    !defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 
 // Support for int, unsigned int, unsigned long long int, and float
 
@@ -118,37 +119,61 @@ inline unsigned long int atomic_fetch_or(volatile unsigned long int* const dest,
 #endif
 
 //----------------------------------------------------------------------------
-#        elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
+#elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 
-    __inline int atomic_fetch_or(volatile int* const dest, const int& val)
-    {
-        return InterlockedOr(dest, val);
-    }
+__inline __device__ __host__ int atomic_fetch_or(volatile int* const dest,
+                                                 const int& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicOr((int*)dest, val);
+#else
+  return InterlockedOr(dest, val);
+#endif
+}
 
-    __inline unsigned int atomic_fetch_or(volatile unsigned int* const dest, const unsigned int& val)
-    {
-        return InterlockedOr(dest, val);
-    }
+__inline __device__ __host__ unsigned int atomic_fetch_or(
+    volatile unsigned int* const dest, const unsigned int& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicOr((unsigned int*)dest, val);
+#else
+  return InterlockedOr(dest, val);
+#endif
+}
 
-    __inline long atomic_fetch_or(volatile long* const dest, const long& val)
-    {
-        return InterlockedOr(dest, val);
-    }
+__inline __device__ __host__ long atomic_fetch_or(volatile long* const dest,
+                                                  const long& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicOr((int*)dest, (int)val);
+#else
+  return InterlockedOr(dest, val);
+#endif
+}
 
-    __inline long long atomic_fetch_or(volatile long long* const dest, const long long& val)
-    {
-        return InterlockedOr(dest, val);
-    }
+__inline __device__ __host__ long long atomic_fetch_or(
+    volatile long long* const dest, const long long& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicOr((unsigned long long int*)dest, (unsigned long long int)val);
+#else
+  return InterlockedOr(dest, val);
+#endif
+}
 
-    __inline unsigned long atomic_fetch_or(volatile unsigned long* const dest, const unsigned long& val)
-    {
-        return InterlockedOr(dest, val);
-    }
+__inline __device__ __host__ unsigned long atomic_fetch_or(
+    volatile unsigned long* const dest, const unsigned long& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicOr((unsigned int*)dest, (unsigned int)val);
+#else
+  return InterlockedOr(dest, val);
+#endif
+}
 
-    __inline unsigned long long atomic_fetch_or(volatile unsigned long long* const dest, const unsigned long long& val)
-    {
-        return InterlockedOr(dest, val);
-    }
+__inline __device__ __host__ unsigned long long atomic_fetch_or(
+    volatile unsigned long long* const dest, const unsigned long long& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicOr((unsigned long long int*)dest, val);
+#else
+  return InterlockedOr(dest, val);
+#endif
+}
 
 //----------------------------------------------------------------------------
 #elif defined(KOKKOS_ENABLE_OPENMP_ATOMICS)

@@ -229,8 +229,7 @@ IF (KOKKOS_HAS_TRILINOS)
   #CMAKE_CXX_FLAGS will get added to Kokkos and Kokkos dependencies automatically here
   #These flags get set up in KOKKOS_PACKAGE_DECL, which means they
   #must be configured before KOKKOS_PACKAGE_DECL
-  SET(KOKKOS_ALL_COMPILE_OPTIONS
-    $<$<COMPILE_LANGUAGE:CXX>:${KOKKOS_ALL_COMPILE_OPTIONS}>)
+  SET(KOKKOS_ALL_COMPILE_OPTIONS $<$<COMPILE_LANGUAGE:CXX>:${KOKKOS_ALL_COMPILE_OPTIONS}>)
 ENDIF()
 
 KOKKOS_PACKAGE_DECL()

@@ -281,11 +281,11 @@ class HPX {
     m_mode                      = other.m_mode;
     m_independent_instance_data = other.m_independent_instance_data;
     m_buffer                    = m_mode == instance_mode::independent
-                   ? m_independent_instance_data->m_buffer
-                   : m_global_instance_data.m_buffer;
-    m_future = m_mode == instance_mode::independent
-                   ? m_independent_instance_data->m_future
-                   : m_global_instance_data.m_future;
+                                      ? m_independent_instance_data->m_buffer
+                                      : m_global_instance_data.m_buffer;
+    m_future                    = m_mode == instance_mode::independent
+                                      ? m_independent_instance_data->m_future
+                                      : m_global_instance_data.m_future;
     return *this;
   }
 #else

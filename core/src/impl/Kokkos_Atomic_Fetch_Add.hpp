@@ -59,7 +59,8 @@ namespace Kokkos {
 //----------------------------------------------------------------------------
 
 #if defined(KOKKOS_ENABLE_CUDA)
-#if defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)
+#if (defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)) && \
+    !defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 
 // Support for int, unsigned int, unsigned long long int, and float
 
@@ -352,186 +353,195 @@ inline T atomic_fetch_add(
   return return_val;
 }
 //----------------------------------------------------------------------------
-#            elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
+#elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 
-    //#if defined( KOKKOS_ENABLE_ASM ) && defined ( KOKKOS_ENABLE_ISA_X86_64 )
-    // __inline
-    // int atomic_fetch_add( volatile int * dest , const int val )
-    //{
-    //#if defined( KOKKOS_ENABLE_RFO_PREFETCH )
-    //  _mm_prefetch( (const char*) dest, _MM_HINT_ET0 );
-    //#endif
-    //
-    //  int original = val;
-    //
-    //  __asm__ __volatile__(
-    //  	"lock xadd %1, %0"
-    //        : "+m" (*dest), "+r" (original)
-    //        : "m" (*dest), "r" (original)
-    //        : "memory"
-    //        );
-    //
-    //  return original;
-    //}
-    //#else
-    inline char atomic_fetch_add(volatile char* const dest, const char& val)
-    {
-        return InterlockedAdd(dest, val);
-    }
+__inline __device__ __host__ char atomic_fetch_add(volatile char* const dest,
+                                                   const char& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicAdd((int*)dest, (int)val);
+#else
+  return InterlockedAdd(dest, val);
+#endif
+}
 
-    inline short atomic_fetch_add(volatile short* const dest, const short& val)
-    {
-        return InterlockedAdd(dest, val);
-    }
+__inline __device__ __host__ short atomic_fetch_add(volatile short* const dest,
+                                                    const short& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicAdd((int*)dest, (int)val);
+#else
+  return InterlockedAdd(dest, val);
+#endif
+}
 
-    inline int atomic_fetch_add(volatile int* const dest, const int& val)
-    {
-        return InterlockedAdd((long*)dest, *((long*)&val));
-    }
-    
-    inline long atomic_fetch_add(volatile long* const dest, const long& val)
-    {
-        return InterlockedAdd(dest, val);
-    }
-    //#endif
+__inline __device__ __host__ int atomic_fetch_add(volatile int* const dest,
+                                                  const int& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicAdd((int*)dest, (int)val);
+#else
+  return InterlockedAdd((long*)dest, *((long*)&val));
+#endif
+}
 
-    inline long long atomic_fetch_add(volatile long long* const dest, const long long& val)
-    {
-        return InterlockedAdd(dest, val);
-    }
+__inline __device__ __host__ long atomic_fetch_add(volatile long* const dest,
+                                                   const long& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicAdd((int*)dest, (int)val);
+#else
+  return InterlockedAdd(dest, val);
+#endif
+}
 
-    // __inline
-    // unsigned int atomic_fetch_add( volatile unsigned int * const dest , const
-    // unsigned int val )
-    //{
-    //#if defined( KOKKOS_ENABLE_RFO_PREFETCH )
-    //  _mm_prefetch( (const char*) dest, _MM_HINT_ET0 );
-    //#endif
-    //  return ::_InterlockedAdd(dest,val);
-    //}
-    //
-    // __inline
-    // unsigned long int atomic_fetch_add( volatile unsigned long int * const dest ,
-    // const unsigned long int val )
-    //{
-    //#if defined( KOKKOS_ENABLE_RFO_PREFETCH )
-    //  _mm_prefetch( (const char*) dest, _MM_HINT_ET0 );
-    //#endif
-    //  return ::_InterlockedAdd(dest,val);
-    //}
+__inline __device__ __host__ long long atomic_fetch_add(
+    volatile long long* const dest, const long long& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicAdd((unsigned long long int*)dest, (unsigned long long int)val);
+#else
+  return InterlockedAdd(dest, val);
+#endif
+}
 
-    template<typename T>
-    inline T atomic_fetch_add(volatile T* const dest, typename std::enable_if<sizeof(T) == sizeof(long), const T&>::type val)
-    {
-        //        union U {
-        //            long i;
-        //            T    t;
-        //            __inline U(){};
-        //        } assume, oldval, newval;
-        //
-        //#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-        //#                endif
-        //
-        //        oldval.t = *dest;
-        //
-        //        do
-        //        {
-        //            assume.i = oldval.i;
-        //            newval.t = assume.t + val;
-        //            oldval.i = ::_InterlockedCompareExchange((volatile long*)dest,
-        //            *(long*)&assume.i, *(long*)&newval.i);
-        //        } while (assume.i != oldval.i);
+__inline __device__ __host__ float atomic_fetch_add(volatile float* const dest,
+                                                    const float& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicAdd((float*)dest, val);
+#else
+  return InterlockedAdd(dest, val);
+#endif
+}
 
-        return InterlockedAdd(dest, val);
-    }
+#if (600 <= __CUDA_ARCH__)
+__inline __device__ __host__ double atomic_fetch_add(
+    volatile double* const dest, const double& val) {
+#if defined(__CUDA_ARCH__)
+  return atomicAdd((double*)dest, val);
+#else
+  return InterlockedAdd(dest, val);
+#endif
+}
+#endif
 
-    template<typename T>
-    inline T atomic_fetch_add(volatile T* const dest, typename std::enable_if<sizeof(T) != sizeof(long) && sizeof(T) == sizeof(long long), const T&>::type val)
-    {
-        //        union U {
-        //            long long i;
-        //            T         t;
-        //            __inline U(){};
-        //        } assume, oldval, newval;
-        //
-        //#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-        //#                endif
-        //
-        //        oldval.t = *dest;
-        //
-        //        do
-        //        {
-        //            assume.i = oldval.i;
-        //            newval.t = assume.t + val;
-        //            oldval.i = ::_InterlockedCompareExchange64((volatile long
-        //            long*)dest, *(long long*)&assume.i, *(long long*)&newval.i);
-        //        } while (assume.i != oldval.i);
+template <typename T>
+__inline __device__ __host__ T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(int), const T>::type val) {
+#if defined(__CUDA_ARCH__)
+  // to work around a bug in the clang cuda compiler, the name here needs to be
+  // different from the one internal to the other overloads
+  union U1 {
+    int i;
+    T t;
+    KOKKOS_INLINE_FUNCTION U1() {}
+  } assume, oldval, newval;
 
-        return InterlockedAdd(dest, val);
-    }
+  oldval.t = *dest;
 
-#                if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
-    template<typename T>
-    inline T atomic_fetch_add(
-        volatile T* const                                                                                                                      dest,
-        typename std::enable_if<sizeof(T) != sizeof(long) && sizeof(T) != sizeof(long long) && sizeof(T) == sizeof(Impl::cas128_t), const T&>::type val)
-    {
-        //        union U {
-        //            Impl::cas128_t i;
-        //            T              t;
-        //            __inline U(){};
-        //        } assume, oldval, newval;
-        //
-        //#                    if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-        //#                    endif
-        //
-        //        oldval.t = *dest;
-        //
-        //        do
-        //        {
-        //            assume.i = oldval.i;
-        //            newval.t = assume.t + val;
-        //            // oldval.i = ::_InterlockedCompareExchange128( (volatile
-        //            Impl::cas128_t*) dest , assume.i , newval.i );
-        //        } while (::_InterlockedCompareExchange128((long long*)dest,
-        //        newval.i.upper, newval.i.lower, ((long long*)&compare)));
+  do {
+    assume.i = oldval.i;
+    newval.t = assume.t + val;
+    oldval.i = atomicCAS((int*)dest, assume.i, newval.i);
+  } while (assume.i != oldval.i);
 
-        return InterlockedAdd(dest, val);
-    }
-#                endif
+  return oldval.t;
+#else
+  return InterlockedAdd(dest, val);
+#endif
+}
 
-    template<typename T>
-    inline T atomic_fetch_add(volatile T* const                       dest,
-                                typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8)
-#                if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
-                                                            && (sizeof(T) != 16)
-#                endif
-                                                            ,
-                                                        const T&>::type val)
-    {
-        while (!Impl::lock_address_host_space((void*)dest))
-            ;
-        T return_val = *dest;
+template <typename T>
+__inline __device__ __host__ T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) != sizeof(int) &&
+                                sizeof(T) == sizeof(unsigned long long int),
+                            const T>::type val) {
+#if defined(__CUDA_ARCH__)
+  // to work around a bug in the clang cuda compiler, the name here needs to be
+  // different from the one internal to the other overloads
+  union U2 {
+    unsigned long long int i;
+    T t;
+    KOKKOS_INLINE_FUNCTION U2() {}
+  } assume, oldval, newval;
 
-        // Don't use the following line of code here:
-        //
-        // const T tmp = *dest = return_val + val;
-        //
-        // Instead, put each assignment in its own statement.  This is
-        // because the overload of T::operator= for volatile *this should
-        // return void, not volatile T&.  See Kokkos #177:
-        //
-        // https://github.com/kokkos/kokkos/issues/177
-        *dest       = return_val + val;
-        const T tmp = *dest;
-        (void)tmp;
-        Impl::unlock_address_host_space((void*)dest);
+  oldval.t = *dest;
 
-        return return_val;
-    }
+  do {
+    assume.i = oldval.i;
+    newval.t = assume.t + val;
+    oldval.i = atomicCAS((unsigned long long int*)dest, assume.i, newval.i);
+  } while (assume.i != oldval.i);
+
+  return oldval.t;
+#else
+  return InterlockedAdd(dest, val);
+#endif
+}
+
+#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
+template <typename T>
+inline T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) != sizeof(long) &&
+                                sizeof(T) != sizeof(long long) &&
+                                sizeof(T) == sizeof(Impl::cas128_t),
+                            const T&>::type val) {
+  //        union U {
+  //            Impl::cas128_t i;
+  //            T              t;
+  //            __inline U(){};
+  //        } assume, oldval, newval;
+  //
+  //#                    if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+  //#                    endif
+  //
+  //        oldval.t = *dest;
+  //
+  //        do
+  //        {
+  //            assume.i = oldval.i;
+  //            newval.t = assume.t + val;
+  //            // oldval.i = ::_InterlockedCompareExchange128( (volatile
+  //            Impl::cas128_t*) dest , assume.i , newval.i );
+  //        } while (::_InterlockedCompareExchange128((long long*)dest,
+  //        newval.i.upper, newval.i.lower, ((long long*)&compare)));
+
+  return InterlockedAdd(dest, val);
+}
+#endif
+
+template <typename T>
+__inline __device__ __host__ T
+atomic_fetch_add(volatile T* const dest,
+                 typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8)
+#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
+                                             && (sizeof(T) != 16)
+#endif
+                                             ,
+                                         const T&>::type val) {
+#if defined(__CUDA_ARCH__)
+  while (!Impl::lock_address_host_space((void*)dest))
+    ;
+  T return_val = *dest;
+
+  // Don't use the following line of code here:
+  //
+  // const T tmp = *dest = return_val + val;
+  //
+  // Instead, put each assignment in its own statement.  This is
+  // because the overload of T::operator= for volatile *this should
+  // return void, not volatile T&.  See Kokkos #177:
+  //
+  // https://github.com/kokkos/kokkos/issues/177
+  *dest = return_val + val;
+  const T tmp = *dest;
+  (void)tmp;
+  Impl::unlock_address_host_space((void*)dest);
+
+  return return_val;
+#else
+  return InterlockedAdd(dest, val);
+#endif
+}
 //----------------------------------------------------------------------------
 
 #elif defined(KOKKOS_ENABLE_OPENMP_ATOMICS)

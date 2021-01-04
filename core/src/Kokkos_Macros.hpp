@@ -108,11 +108,6 @@
 
 #if defined(KOKKOS_ENABLE_CUDA) && defined(__CUDACC__)
 
-#if defined(_WINDOWS) && defined(__clang__)
-#include <cuda_wrappers/new>
-#endif
-
-
 // Compiling with a CUDA compiler.
 //
 //  Include <cuda.h> to pick up the CUDA_VERSION macro defined as:
@@ -123,6 +118,10 @@
 
 #include <cuda_runtime.h>
 #include <cuda.h>
+
+// #if defined(_WINDOWS) && defined(__clang__)
+// #include <cuda_wrappers/new>
+// #endif
 
 #if defined(_MSC_VER)
 #define KOKKOS_IMPL_WINDOWS_CUDA
@@ -157,11 +156,9 @@
 
 #if defined(__CUDA_ARCH__) && (__CUDA_ARCH__ >= 700) && \
     !defined(KOKKOS_IMPL_WINDOWS_CUDA)
-#pragma message("KOKKOS_DISABLE_CUDA_ASM")
 // PTX atomics with memory order semantics are only available on volta and later
 #if !defined(KOKKOS_DISABLE_CUDA_ASM)
 #if !defined(KOKKOS_ENABLE_CUDA_ASM)
-#pragma message("KOKKOS_ENABLE_CUDA_ASM")
 #define KOKKOS_ENABLE_CUDA_ASM
 #if !defined(KOKKOS_DISABLE_CUDA_ASM_ATOMICS)
 #define KOKKOS_ENABLE_CUDA_ASM_ATOMICS
@@ -406,11 +403,28 @@
 // CLANG compiler macros
 
 #if defined(KOKKOS_COMPILER_CLANG)
+
+#ifdef __thread
+#undef __thread
+#endif
+
+#define __thread
+
 //#define KOKKOS_ENABLE_PRAGMA_UNROLL 1
 //#define KOKKOS_ENABLE_PRAGMA_IVDEP 1
 //#define KOKKOS_ENABLE_PRAGMA_LOOPCOUNT 1
 //#define KOKKOS_ENABLE_PRAGMA_VECTOR 1
 //#define KOKKOS_ENABLE_PRAGMA_SIMD 1
+
+#if !defined(KOKKOS_RESTRICT)
+#define KOKKOS_RESTRICT __restrict__
+#endif
+
+#if !defined(KOKKOS_ENABLE_ASM) && !defined(__PGIC__) &&            \
+    (defined(__amd64) || defined(__amd64__) || defined(__x86_64) || \
+     defined(__x86_64__) || defined(__PPC64__))
+#define KOKKOS_ENABLE_ASM 1
+#endif
 
 #if !defined(KOKKOS_IMPL_FORCEINLINE_FUNCTION)
 #define KOKKOS_IMPL_FORCEINLINE_FUNCTION inline __attribute__((always_inline))

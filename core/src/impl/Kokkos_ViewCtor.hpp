@@ -257,10 +257,10 @@ struct ViewCtorProp : public ViewCtorProp<void, P>... {
    *  Requires  std::is_same< P , ViewCtorProp< void , Args >::value ...
    */
   template <typename... Args>
-  inline ViewCtorProp(Args const &... args) : ViewCtorProp<void, P>(args)... {}
+  inline ViewCtorProp(Args const &...args) : ViewCtorProp<void, P>(args)... {}
 
   template <typename... Args>
-  KOKKOS_INLINE_FUNCTION ViewCtorProp(pointer_type arg0, Args const &... args)
+  KOKKOS_INLINE_FUNCTION ViewCtorProp(pointer_type arg0, Args const &...args)
       : ViewCtorProp<void, pointer_type>(arg0),
         ViewCtorProp<void, typename ViewCtorProp<void, Args>::type>(args)... {}
 

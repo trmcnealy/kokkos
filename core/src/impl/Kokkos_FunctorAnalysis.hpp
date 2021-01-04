@@ -50,6 +50,10 @@
 #include <impl/Kokkos_Traits.hpp>
 #include <impl/Kokkos_Tags.hpp>
 
+#ifdef VOID
+#undef VOID
+#endif
+
 //----------------------------------------------------------------------------
 //----------------------------------------------------------------------------
 
@@ -773,8 +777,8 @@ struct FunctorAnalysis {
     }
 
     KOKKOS_INLINE_FUNCTION
-    void join(ValueType volatile* dst, ValueType volatile const* src) const
-        noexcept {
+    void join(ValueType volatile* dst,
+              ValueType volatile const* src) const noexcept {
       DeduceJoin<>::join(m_functor, dst, src);
     }
 

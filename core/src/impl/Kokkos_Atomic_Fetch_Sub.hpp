@@ -59,7 +59,8 @@ namespace Kokkos {
 //----------------------------------------------------------------------------
 
 #if defined(KOKKOS_ENABLE_CUDA)
-#if defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)
+#if (defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)) && \
+    !defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 
 // Support for int, unsigned int, unsigned long long int, and float
 
@@ -285,132 +286,134 @@ inline T atomic_fetch_sub(
 }
 
 //----------------------------------------------------------------------------
-#            elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
-    inline char atomic_fetch_sub(volatile char* const dest, const char& val)
-    {
-#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#                endif
-        return InterlockedSub(dest, val);
-    }
+#elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
+inline char atomic_fetch_sub(volatile char* const dest, const char& val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return InterlockedSub(dest, val);
+}
 
-    inline short atomic_fetch_sub(volatile short* const dest, const short& val)
-    {
-        return InterlockedSub(dest, val);
-    }
+inline short atomic_fetch_sub(volatile short* const dest, const short& val) {
+  return InterlockedSub(dest, val);
+}
 
-    inline int atomic_fetch_sub(volatile int* const dest, const int& val)
-    {
-#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#                endif
-        return InterlockedSub((long*)dest, *((long*)&val));
-    }
+inline int atomic_fetch_sub(volatile int* const dest, const int& val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return InterlockedSub((long*)dest, *((long*)&val));
+}
 
-    inline long atomic_fetch_sub(volatile long* const dest, const long& val)
-    {
-#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#                endif
-        return InterlockedSub(dest, val);
-    }
+inline long atomic_fetch_sub(volatile long* const dest, const long& val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return InterlockedSub(dest, val);
+}
 
-    inline long long atomic_fetch_sub(volatile long long* const dest, const long long& val)
-    {
-#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#                endif
-        return InterlockedSub(dest, val);
-    }
+inline long long atomic_fetch_sub(volatile long long* const dest,
+                                  const long long& val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return InterlockedSub(dest, val);
+}
 
-    //#if defined( KOKKOS_ENABLE_GNU_ATOMICS )
-    //
-    // __inline
-    // unsigned long atomic_fetch_sub( volatile unsigned long * const dest , const
-    // unsigned long val )
-    //{
-    //#if defined( KOKKOS_ENABLE_RFO_PREFETCH )
-    //  _mm_prefetch( (const char*) dest, _MM_HINT_ET0 );
-    //#endif
-    //  return _InterlockedExchangeSub(dest,val);
-    //}
-    //
-    // __inline
-    // unsigned long long atomic_fetch_sub( volatile unsigned long long * const dest
-    // , const unsigned long long val )
-    //{
-    //#if defined( KOKKOS_ENABLE_RFO_PREFETCH )
-    //  _mm_prefetch( (const char*) dest, _MM_HINT_ET0 );
-    //#endif
-    //  return _InterlockedExchangeSub64(dest,val);
-    //}
-    //
-    //#endif
+//#if defined( KOKKOS_ENABLE_GNU_ATOMICS )
+//
+// __inline
+// unsigned long atomic_fetch_sub( volatile unsigned long * const dest , const
+// unsigned long val )
+//{
+//#if defined( KOKKOS_ENABLE_RFO_PREFETCH )
+//  _mm_prefetch( (const char*) dest, _MM_HINT_ET0 );
+//#endif
+//  return _InterlockedExchangeSub(dest,val);
+//}
+//
+// __inline
+// unsigned long long atomic_fetch_sub( volatile unsigned long long * const dest
+// , const unsigned long long val )
+//{
+//#if defined( KOKKOS_ENABLE_RFO_PREFETCH )
+//  _mm_prefetch( (const char*) dest, _MM_HINT_ET0 );
+//#endif
+//  return _InterlockedExchangeSub64(dest,val);
+//}
+//
+//#endif
 
-    template<typename T>
-    inline T atomic_fetch_sub(volatile T* const dest, typename std::enable_if<sizeof(T) == sizeof(long), const T&>::type val)
-    {
-        //        union {
-        //            long i;
-        //            T    t;
-        //        } assume, oldval, newval;
-        //
-        //#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-        //#                endif
-        //
-        //        oldval.t = *dest;
-        //
-        //        do
-        //        {
-        //            assume.i = oldval.i;
-        //            newval.t = assume.t - val;
-        //            oldval.i = _InterlockedCompareExchange((long volatile*)dest,
-        //            *(long*)&assume.i, *(long*)&newval.i);
-        //        } while (assume.i != oldval.i);
+template <typename T>
+inline T atomic_fetch_sub(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(long), const T&>::type val) {
+  //        union {
+  //            long i;
+  //            T    t;
+  //        } assume, oldval, newval;
+  //
+  //#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+  //#                endif
+  //
+  //        oldval.t = *dest;
+  //
+  //        do
+  //        {
+  //            assume.i = oldval.i;
+  //            newval.t = assume.t - val;
+  //            oldval.i = _InterlockedCompareExchange((long volatile*)dest,
+  //            *(long*)&assume.i, *(long*)&newval.i);
+  //        } while (assume.i != oldval.i);
 
-        return InterlockedSub(dest, val);
-    }
+  return InterlockedSub(dest, val);
+}
 
-    template<typename T>
-    inline T atomic_fetch_sub(volatile T* const dest, typename std::enable_if<sizeof(T) != sizeof(long) && sizeof(T) == sizeof(long long), const T&>::type val)
-    {
-        //#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-        //#                endif
-        //
-        //        union {
-        //            long long i;
-        //            T         t;
-        //        } assume, oldval, newval;
-        //
-        //        oldval.t = *dest;
-        //
-        //        do
-        //        {
-        //            assume.i = oldval.i;
-        //            newval.t = assume.t - val;
-        //            oldval.i = _InterlockedCompareExchange64((long long
-        //            volatile*)dest, *(long long*)&assume.i, *(long long*)&newval.i);
-        //        } while (assume.i != oldval.i);
+template <typename T>
+inline T atomic_fetch_sub(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) != sizeof(long) &&
+                                sizeof(T) == sizeof(long long),
+                            const T&>::type val) {
+  //#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+  //#                endif
+  //
+  //        union {
+  //            long long i;
+  //            T         t;
+  //        } assume, oldval, newval;
+  //
+  //        oldval.t = *dest;
+  //
+  //        do
+  //        {
+  //            assume.i = oldval.i;
+  //            newval.t = assume.t - val;
+  //            oldval.i = _InterlockedCompareExchange64((long long
+  //            volatile*)dest, *(long long*)&assume.i, *(long long*)&newval.i);
+  //        } while (assume.i != oldval.i);
 
-        return InterlockedSub(dest, val);
-    }
+  return InterlockedSub(dest, val);
+}
 
-    template<typename T>
-    inline T atomic_fetch_sub(volatile T* const dest, typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8), const T&>::type val)
-    {
-#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#                endif
+template <typename T>
+inline T atomic_fetch_sub(
+    volatile T* const dest,
+    typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8),
+                            const T&>::type val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
 
-        while (!Impl::lock_address_host_space((void*)dest))
-            ;
-        T return_val = *dest;
-        *dest        = return_val - val;
-        Impl::unlock_address_host_space((void*)dest);
-        return return_val;
-    }
+  while (!Impl::lock_address_host_space((void*)dest))
+    ;
+  T return_val = *dest;
+  *dest = return_val - val;
+  Impl::unlock_address_host_space((void*)dest);
+  return return_val;
+}
 //----------------------------------------------------------------------------
 
 #elif defined(KOKKOS_ENABLE_OPENMP_ATOMICS)

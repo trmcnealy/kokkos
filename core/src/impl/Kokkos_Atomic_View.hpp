@@ -359,7 +359,7 @@ class AtomicViewDataHandle {
   }
 
   KOKKOS_INLINE_FUNCTION
-  operator typename ViewTraits::value_type*() const { return ptr; }
+  operator typename ViewTraits::value_type *() const { return ptr; }
 };
 
 template <unsigned Size>

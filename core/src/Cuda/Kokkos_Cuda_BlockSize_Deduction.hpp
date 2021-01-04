@@ -202,4 +202,4 @@ int cuda_get_opt_block_size(const CudaInternal* cuda_instance,
 }  // namespace Kokkos
 
 #endif  // KOKKOS_ENABLE_CUDA
-#endif  /* #ifndef KOKKOS_CUDA_INTERNAL_HPP */
+#endif /* #ifndef KOKKOS_CUDA_INTERNAL_HPP */

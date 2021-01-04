@@ -73,7 +73,8 @@
 #include <impl/Kokkos_Traits.hpp>
 
 //----------------------------------------------------------------------------
-#if (defined(_WIN32) || defined(_WIN64) || defined(_WINDOWS) || defined(_MSC_VER) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND))
+#if (defined(_WIN32) || defined(_WIN64) || defined(_WINDOWS) || \
+     defined(_MSC_VER) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND))
 #define KOKKOS_ENABLE_WINDOWS_ATOMICS
 #if defined(KOKKOS_ENABLE_CUDA)
 #define KOKKOS_ENABLE_CUDA_ATOMICS

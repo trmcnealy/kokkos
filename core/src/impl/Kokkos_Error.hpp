@@ -233,7 +233,7 @@ KOKKOS_IMPL_ABORT_NORETURN KOKKOS_INLINE_FUNCTION void abort(
     }                                                                  \
   }
 #endif  // ifndef KOKKOS_ASSERT
-#else   // not debug mode
+#else  // not debug mode
 #define KOKKOS_EXPECTS(...)
 #define KOKKOS_ENSURES(...)
 #ifndef KOKKOS_ASSERT

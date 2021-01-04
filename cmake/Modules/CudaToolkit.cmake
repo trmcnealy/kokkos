@@ -536,7 +536,7 @@ IF(CMAKE_VERSION VERSION_LESS "3.12.0")
       ""
       ${ARGN}
     )
-    get_target_property(INLUDE_DIRS ${target} INTERFACE_INCLUDE_DIRECTORIES)
+    get_target_property(INCLUDE_DIRS ${target} INTERFACE_INCLUDE_DIRECTORIES)
     if (INCLUDE_DIRS)
       list(APPEND INCLUDE_DIRS ${HACK_UNPARSED_ARGUMENTS})
     else()

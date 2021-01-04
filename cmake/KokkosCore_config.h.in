@@ -24,10 +24,10 @@
 
 #ifndef __CUDA_ARCH__
 #cmakedefine KOKKOS_ENABLE_TM
-#cmakedefine KOKKOS_USE_ISA_X86_64
-#cmakedefine KOKKOS_USE_ISA_KNC
-#cmakedefine KOKKOS_USE_ISA_POWERPCLE
-#cmakedefine KOKKOS_USE_ISA_POWERPCBE
+#cmakedefine KOKKOS_ENABLE_ISA_X86_64
+#cmakedefine KOKKOS_ENABLE_ISA_KNC
+#cmakedefine KOKKOS_ENABLE_ISA_POWERPCLE
+#cmakedefine KOKKOS_ENABLE_ISA_POWERPCBE
 #endif
 
 /* General Settings */
@@ -57,7 +57,7 @@
 
 /* TPL Settings */
 #cmakedefine KOKKOS_ENABLE_HWLOC
-#cmakedefine KOKKOS_USE_LIBRT
+#cmakedefine KOKKOS_ENABLE_LIBRT
 #cmakedefine KOKKOS_ENABLE_HWBSPACE
 #cmakedefine KOKKOS_ENABLE_LIBDL
 #cmakedefine KOKKOS_IMPL_CUDA_CLANG_WORKAROUND

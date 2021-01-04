@@ -359,160 +359,171 @@ inline void atomic_assign(
   Impl::unlock_address_host_space((void*)dest);
 }
 //----------------------------------------------------------------------------
-#        elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS) //&& !defined(KOKKOS_ENABLE_CUDA_ATOMICS)
+#elif defined( \
+    KOKKOS_ENABLE_WINDOWS_ATOMICS)  //&& !defined(KOKKOS_ENABLE_CUDA_ATOMICS)
 
-    template<typename T>
-    __inline T atomic_exchange(volatile T* const dest, typename std::enable_if<sizeof(T) == sizeof(long) && sizeof(T) != sizeof(long long), const T&>::type val)
-    {
-        //#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-        //#            endif
-        //
-        //        const long v = *((long*)&val); // Extract to be sure the value
-        //        doesn't change
-        //
-        //        long assumed;
-        //
-        //        union U {
-        //            T    val_T;
-        //            long val_type;
-        //            __inline U(){};
-        //        } old;
-        //
-        //        old.val_T = *dest;
-        //
-        //        do
-        //        {
-        //            assumed      = old.val_type;
-        //            old.val_type = InterlockedCompareExchange((volatile long*)dest,
-        //            assumed, v);
-        //        } while (assumed != old.val_type);
+template <typename T>
+__inline T atomic_exchange(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(long) &&
+                                sizeof(T) != sizeof(long long),
+                            const T&>::type val) {
+  //#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+  //#            endif
+  //
+  //        const long v = *((long*)&val); // Extract to be sure the value
+  //        doesn't change
+  //
+  //        long assumed;
+  //
+  //        union U {
+  //            T    val_T;
+  //            long val_type;
+  //            __inline U(){};
+  //        } old;
+  //
+  //        old.val_T = *dest;
+  //
+  //        do
+  //        {
+  //            assumed      = old.val_type;
+  //            old.val_type = InterlockedCompareExchange((volatile long*)dest,
+  //            assumed, v);
+  //        } while (assumed != old.val_type);
 
-        return InterlockedExchange(dest, val);
-    }
+  return InterlockedExchange(dest, val);
+}
 
-    template<typename T>
-    __inline T atomic_exchange(volatile T* const dest, typename std::enable_if<sizeof(T) != sizeof(long) && sizeof(T) == sizeof(long long), const T&>::type val)
-    {
-        //#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-        //#            endif
-        //
-        //        const long long v = *((long long*)&val); // Extract to be sure the
-        //        value doesn't change
-        //
-        //        long long assumed;
-        //
-        //        union U {
-        //            T         val_T;
-        //            long long val_type;
-        //            __inline U(){};
-        //        } old;
-        //
-        //        old.val_T = *dest;
-        //
-        //        do
-        //        {
-        //            assumed      = old.val_type;
-        //            old.val_type = _InterlockedCompareExchange64((volatile long
-        //            long*)dest, assumed, v);
-        //        } while (assumed != old.val_type);
+template <typename T>
+__inline T atomic_exchange(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) != sizeof(long) &&
+                                sizeof(T) == sizeof(long long),
+                            const T&>::type val) {
+  //#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+  //#            endif
+  //
+  //        const long long v = *((long long*)&val); // Extract to be sure the
+  //        value doesn't change
+  //
+  //        long long assumed;
+  //
+  //        union U {
+  //            T         val_T;
+  //            long long val_type;
+  //            __inline U(){};
+  //        } old;
+  //
+  //        old.val_T = *dest;
+  //
+  //        do
+  //        {
+  //            assumed      = old.val_type;
+  //            old.val_type = _InterlockedCompareExchange64((volatile long
+  //            long*)dest, assumed, v);
+  //        } while (assumed != old.val_type);
 
-        return InterlockedExchange(dest, val);
-    }
+  return InterlockedExchange(dest, val);
+}
 
-#            if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
-    template<typename T>
-    __inline T atomic_exchange(volatile T* const dest, typename std::enable_if<sizeof(T) == sizeof(Impl::cas128_t), const T&>::type val)
-    {
-        //#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-        //#                endif
-        //
-        //        union U {
-        //            Impl::cas128_t i;
-        //            T              t;
-        //            __inline U(){};
-        //        } assume, oldval, newval;
-        //
-        //        oldval.t = *dest;
-        //        newval.t = val;
-        //
-        //        do
-        //        {
-        //            assume.i = oldval.i;
-        //            oldval.i = _InterlockedCompareExchange128((volatile long
-        //            long*)dest, *(long long*)&assume.i, *(long long*)&newval.i);
-        //        } while (assume.i != oldval.i);
+#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
+template <typename T>
+__inline T atomic_exchange(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(Impl::cas128_t), const T&>::type
+        val) {
+  //#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+  //#                endif
+  //
+  //        union U {
+  //            Impl::cas128_t i;
+  //            T              t;
+  //            __inline U(){};
+  //        } assume, oldval, newval;
+  //
+  //        oldval.t = *dest;
+  //        newval.t = val;
+  //
+  //        do
+  //        {
+  //            assume.i = oldval.i;
+  //            oldval.i = _InterlockedCompareExchange128((volatile long
+  //            long*)dest, *(long long*)&assume.i, *(long long*)&newval.i);
+  //        } while (assume.i != oldval.i);
 
-        return InterlockedExchange(dest, val);
-    }
-#            endif
+  return InterlockedExchange(dest, val);
+}
+#endif
 
-    template<typename T>
-    __inline T atomic_exchange(volatile T* const                       dest,
-                               typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8)
-#            if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
-                                                           && (sizeof(T) != 16)
-#            endif
-                                                           ,
-                                                       const T>::type& val)
-    {
-        while (!Impl::lock_address_host_space((void*)dest))
-            ;
-        T return_val = *dest;
-        // Don't use the following line of code here:
-        //
-        // const T tmp = *dest = val;
-        //
-        // Instead, put each assignment in its own statement.  This is
-        // because the overload of T::operator= for volatile *this should
-        // return void, not volatile T&.  See Kokkos #177:
-        //
-        // https://github.com/kokkos/kokkos/issues/177
-        *dest       = val;
-        const T tmp = *dest;
-#            ifndef KOKKOS_COMPILER_CLANG
-        (void)tmp;
-#            endif
-        Impl::unlock_address_host_space((void*)dest);
-        return return_val;
-    }
+template <typename T>
+__inline T atomic_exchange(
+    volatile T* const dest,
+    typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8)
+#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
+                                && (sizeof(T) != 16)
+#endif
+                                ,
+                            const T>::type& val) {
+  while (!Impl::lock_address_host_space((void*)dest))
+    ;
+  T return_val = *dest;
+  // Don't use the following line of code here:
+  //
+  // const T tmp = *dest = val;
+  //
+  // Instead, put each assignment in its own statement.  This is
+  // because the overload of T::operator= for volatile *this should
+  // return void, not volatile T&.  See Kokkos #177:
+  //
+  // https://github.com/kokkos/kokkos/issues/177
+  *dest       = val;
+  const T tmp = *dest;
+#ifndef KOKKOS_COMPILER_CLANG
+  (void)tmp;
+#endif
+  Impl::unlock_address_host_space((void*)dest);
+  return return_val;
+}
 
-    template<typename T>
-    __inline void atomic_assign(volatile T* const                                                                                    dest,
-                                typename std::enable_if<sizeof(T) == sizeof(long) || sizeof(T) == sizeof(long long), const T&>::type val)
-    {
-        //        typedef typename std::conditional<sizeof(T) == sizeof(long), long,
-        //        long long>::type type;
-        //
-        //#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-        //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-        //#            endif
-        //
-        //        const type v = *((type*)&val); // Extract to be sure the value
-        //        doesn't change
-        //
-        //        type assumed;
-        //
-        //        union U {
-        //            T    val_T;
-        //            type val_type;
-        //            __inline U(){};
-        //        } old;
-        //
-        //        old.val_T = *dest;
-        //
-        //        do
-        //        {
-        //            assumed      = old.val_type;
-        //            old.val_type = _InterlockedExchange64((volatile type*)dest,
-        //            assumed, v);
-        //        } while (assumed != old.val_type);
+template <typename T>
+__inline void atomic_assign(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(long) ||
+                                sizeof(T) == sizeof(long long),
+                            const T&>::type val) {
+  //        typedef typename std::conditional<sizeof(T) == sizeof(long), long,
+  //        long long>::type type;
+  //
+  //#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+  //#            endif
+  //
+  //        const type v = *((type*)&val); // Extract to be sure the value
+  //        doesn't change
+  //
+  //        type assumed;
+  //
+  //        union U {
+  //            T    val_T;
+  //            type val_type;
+  //            __inline U(){};
+  //        } old;
+  //
+  //        old.val_T = *dest;
+  //
+  //        do
+  //        {
+  //            assumed      = old.val_type;
+  //            old.val_type = _InterlockedExchange64((volatile type*)dest,
+  //            assumed, v);
+  //        } while (assumed != old.val_type);
 
-        InterlockedExchange(dest, val);
-    }
-    
+  InterlockedExchange(dest, val);
+}
+
 #elif defined(KOKKOS_ENABLE_OPENMP_ATOMICS)
 
 template <typename T>

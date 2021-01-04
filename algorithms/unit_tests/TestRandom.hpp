@@ -308,11 +308,11 @@ struct test_random_scalar {
           variance_expect / (result.variance / num_draws / 3) - 1.0;
       double covariance_eps =
           result.covariance / num_draws / 2 / variance_expect;
-      pass_mean = ((-tolerance < mean_eps) && (tolerance > mean_eps)) ? 1 : 0;
-      pass_var  = ((-1.5 * tolerance < variance_eps) &&
+      pass_mean  = ((-tolerance < mean_eps) && (tolerance > mean_eps)) ? 1 : 0;
+      pass_var   = ((-1.5 * tolerance < variance_eps) &&
                   (1.5 * tolerance > variance_eps))
-                     ? 1
-                     : 0;
+                       ? 1
+                       : 0;
       pass_covar = ((-2.0 * tolerance < covariance_eps) &&
                     (2.0 * tolerance > covariance_eps))
                        ? 1

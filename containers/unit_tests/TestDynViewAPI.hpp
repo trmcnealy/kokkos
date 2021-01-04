@@ -1282,9 +1282,7 @@ class TestDynViewAPI {
         for (size_t i1 = 0; i1 < N1; ++i1) {
           for (size_t i2 = 0; i2 < N2; ++i2) {
             for (size_t i3 = 0; i3 < N3; ++i3) {
-              {
-                ASSERT_EQ(hx(ip, i1, i2, i3), hy(ip, i1, i2, i3));
-              }
+              { ASSERT_EQ(hx(ip, i1, i2, i3), hy(ip, i1, i2, i3)); }
             }
           }
         }
@@ -1298,9 +1296,7 @@ class TestDynViewAPI {
         for (size_t i1 = 0; i1 < N1; ++i1) {
           for (size_t i2 = 0; i2 < N2; ++i2) {
             for (size_t i3 = 0; i3 < N3; ++i3) {
-              {
-                ASSERT_EQ(hx(ip, i1, i2, i3), T(0));
-              }
+              { ASSERT_EQ(hx(ip, i1, i2, i3), T(0)); }
             }
           }
         }

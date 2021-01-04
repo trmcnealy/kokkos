@@ -222,8 +222,8 @@ void *HostSpace::allocate(const char *arg_label, const size_t arg_alloc_size,
       constexpr size_t use_huge_pages = (1u << 27);
       constexpr int prot              = PROT_READ | PROT_WRITE;
       const int flags                 = arg_alloc_size < use_huge_pages
-                            ? KOKKOS_IMPL_POSIX_MMAP_FLAGS
-                            : KOKKOS_IMPL_POSIX_MMAP_FLAGS_HUGE;
+                                            ? KOKKOS_IMPL_POSIX_MMAP_FLAGS
+                                            : KOKKOS_IMPL_POSIX_MMAP_FLAGS_HUGE;
 
       // read write access to private memory
 
