@@ -296,7 +296,7 @@ void test_deep_copy(uint32_t num_nodes) {
 // FIXME_HIP wrong result in CI but works locally
 #ifndef KOKKOS_ENABLE_HIP
 // WORKAROUND MSVC
-#ifndef _WIN32
+#ifndef _WINDOWS
 TEST(TEST_CATEGORY, UnorderedMap_insert) {
   for (int i = 0; i < 500; ++i) {
     test_insert<TEST_EXECSPACE>(100000, 90000, 100, true);

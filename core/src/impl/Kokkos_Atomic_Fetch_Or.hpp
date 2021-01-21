@@ -80,7 +80,7 @@ __inline__ __device__ unsigned long long int atomic_fetch_or(
 #endif
 #endif
 //----------------------------------------------------------------------------
-#if !defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)
+#if (!defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)) && !defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 #if defined(KOKKOS_ENABLE_GNU_ATOMICS) || defined(KOKKOS_ENABLE_INTEL_ATOMICS)
 
 inline int atomic_fetch_or(volatile int* const dest, const int val) {

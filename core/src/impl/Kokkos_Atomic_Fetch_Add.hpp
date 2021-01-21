@@ -178,181 +178,7 @@ atomic_fetch_add(volatile T* const dest,
   }
   return return_val;
 }
-#endif
-#endif
-//----------------------------------------------------------------------------
-#if !defined(KOKKOS_ENABLE_ROCM_ATOMICS) || !defined(KOKKOS_ENABLE_HIP_ATOMICS)
-#if !defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)
-#if defined(KOKKOS_ENABLE_GNU_ATOMICS) || defined(KOKKOS_ENABLE_INTEL_ATOMICS)
 
-#if defined(KOKKOS_ENABLE_ASM) && (defined(KOKKOS_ENABLE_ISA_X86_64) || \
-                                   defined(KOKKOS_KNL_USE_ASM_WORKAROUND))
-inline int atomic_fetch_add(volatile int* dest, const int val) {
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-
-  int original = val;
-
-  __asm__ __volatile__("lock xadd %1, %0"
-                       : "+m"(*dest), "+r"(original)
-                       : "m"(*dest), "r"(original)
-                       : "memory");
-
-  return original;
-}
-#else
-inline int atomic_fetch_add(volatile int* const dest, const int val) {
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-  return __sync_fetch_and_add(dest, val);
-}
-#endif
-
-inline long int atomic_fetch_add(volatile long int* const dest,
-                                 const long int val) {
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-  return __sync_fetch_and_add(dest, val);
-}
-
-#if defined(KOKKOS_ENABLE_GNU_ATOMICS)
-
-inline unsigned int atomic_fetch_add(volatile unsigned int* const dest,
-                                     const unsigned int val) {
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-  return __sync_fetch_and_add(dest, val);
-}
-
-inline unsigned long int atomic_fetch_add(
-    volatile unsigned long int* const dest, const unsigned long int val) {
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-  return __sync_fetch_and_add(dest, val);
-}
-
-#endif
-
-template <typename T>
-inline T atomic_fetch_add(
-    volatile T* const dest,
-    typename std::enable_if<sizeof(T) == sizeof(int), const T>::type val) {
-  union U {
-    int i;
-    T t;
-    inline U() {}
-  } assume, oldval, newval;
-
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-
-  oldval.t = *dest;
-
-  do {
-    assume.i = oldval.i;
-    newval.t = assume.t + val;
-    oldval.i = __sync_val_compare_and_swap((int*)dest, assume.i, newval.i);
-  } while (assume.i != oldval.i);
-
-  return oldval.t;
-}
-
-template <typename T>
-inline T atomic_fetch_add(volatile T* const dest,
-                          typename std::enable_if<sizeof(T) != sizeof(int) &&
-                                                      sizeof(T) == sizeof(long),
-                                                  const T>::type val) {
-  union U {
-    long i;
-    T t;
-    inline U() {}
-  } assume, oldval, newval;
-
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-
-  oldval.t = *dest;
-
-  do {
-    assume.i = oldval.i;
-    newval.t = assume.t + val;
-    oldval.i = __sync_val_compare_and_swap((long*)dest, assume.i, newval.i);
-  } while (assume.i != oldval.i);
-
-  return oldval.t;
-}
-
-#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
-template <typename T>
-inline T atomic_fetch_add(
-    volatile T* const dest,
-    typename std::enable_if<sizeof(T) != sizeof(int) &&
-                                sizeof(T) != sizeof(long) &&
-                                sizeof(T) == sizeof(Impl::cas128_t),
-                            const T>::type val) {
-  union U {
-    Impl::cas128_t i;
-    T t;
-    inline U() {}
-  } assume, oldval, newval;
-
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-
-  oldval.t = *dest;
-
-  do {
-    assume.i = oldval.i;
-    newval.t = assume.t + val;
-    oldval.i = Impl::cas128((volatile Impl::cas128_t*)dest, assume.i, newval.i);
-  } while (assume.i != oldval.i);
-
-  return oldval.t;
-}
-#endif
-
-//----------------------------------------------------------------------------
-
-template <typename T>
-inline T atomic_fetch_add(
-    volatile T* const dest,
-    typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8)
-#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
-                                && (sizeof(T) != 16)
-#endif
-                                ,
-                            const T>::type& val) {
-  while (!Impl::lock_address_host_space((void*)dest))
-    ;
-  Kokkos::memory_fence();
-  T return_val = *dest;
-
-  // Don't use the following line of code here:
-  //
-  // const T tmp = *dest = return_val + val;
-  //
-  // Instead, put each assignment in its own statement.  This is
-  // because the overload of T::operator= for volatile *this should
-  // return void, not volatile T&.  See Kokkos #177:
-  //
-  // https://github.com/kokkos/kokkos/issues/177
-  *dest       = return_val + val;
-  const T tmp = *dest;
-  (void)tmp;
-  Kokkos::memory_fence();
-  Impl::unlock_address_host_space((void*)dest);
-
-  return return_val;
-}
-//----------------------------------------------------------------------------
 #elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 
 __inline __device__ __host__ char atomic_fetch_add(volatile char* const dest,
@@ -532,7 +358,7 @@ atomic_fetch_add(volatile T* const dest,
   // return void, not volatile T&.  See Kokkos #177:
   //
   // https://github.com/kokkos/kokkos/issues/177
-  *dest = return_val + val;
+  *dest       = return_val + val;
   const T tmp = *dest;
   (void)tmp;
   Impl::unlock_address_host_space((void*)dest);
@@ -541,6 +367,278 @@ atomic_fetch_add(volatile T* const dest,
 #else
   return InterlockedAdd(dest, val);
 #endif
+}
+//----------------------------------------------------------------------------
+
+#endif
+#endif
+//----------------------------------------------------------------------------
+#if !defined(KOKKOS_ENABLE_ROCM_ATOMICS) || !defined(KOKKOS_ENABLE_HIP_ATOMICS)
+#if (!defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)) && \
+    !defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
+#if defined(KOKKOS_ENABLE_GNU_ATOMICS) || defined(KOKKOS_ENABLE_INTEL_ATOMICS)
+
+#if defined(KOKKOS_ENABLE_ASM) && (defined(KOKKOS_ENABLE_ISA_X86_64) || \
+                                   defined(KOKKOS_KNL_USE_ASM_WORKAROUND))
+inline int atomic_fetch_add(volatile int* dest, const int val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+
+  int original = val;
+
+  __asm__ __volatile__("lock xadd %1, %0"
+                       : "+m"(*dest), "+r"(original)
+                       : "m"(*dest), "r"(original)
+                       : "memory");
+
+  return original;
+}
+#else
+inline int atomic_fetch_add(volatile int* const dest, const int val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return __sync_fetch_and_add(dest, val);
+}
+#endif
+
+inline long int atomic_fetch_add(volatile long int* const dest,
+                                 const long int val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return __sync_fetch_and_add(dest, val);
+}
+
+#if defined(KOKKOS_ENABLE_GNU_ATOMICS)
+
+inline unsigned int atomic_fetch_add(volatile unsigned int* const dest,
+                                     const unsigned int val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return __sync_fetch_and_add(dest, val);
+}
+
+inline unsigned long int atomic_fetch_add(
+    volatile unsigned long int* const dest, const unsigned long int val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return __sync_fetch_and_add(dest, val);
+}
+
+#endif
+
+template <typename T>
+inline T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(int), const T>::type val) {
+  union U {
+    int i;
+    T t;
+    inline U() {}
+  } assume, oldval, newval;
+
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+
+  oldval.t = *dest;
+
+  do {
+    assume.i = oldval.i;
+    newval.t = assume.t + val;
+    oldval.i = __sync_val_compare_and_swap((int*)dest, assume.i, newval.i);
+  } while (assume.i != oldval.i);
+
+  return oldval.t;
+}
+
+template <typename T>
+inline T atomic_fetch_add(volatile T* const dest,
+                          typename std::enable_if<sizeof(T) != sizeof(int) &&
+                                                      sizeof(T) == sizeof(long),
+                                                  const T>::type val) {
+  union U {
+    long i;
+    T t;
+    inline U() {}
+  } assume, oldval, newval;
+
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+
+  oldval.t = *dest;
+
+  do {
+    assume.i = oldval.i;
+    newval.t = assume.t + val;
+    oldval.i = __sync_val_compare_and_swap((long*)dest, assume.i, newval.i);
+  } while (assume.i != oldval.i);
+
+  return oldval.t;
+}
+
+#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
+template <typename T>
+inline T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) != sizeof(int) &&
+                                sizeof(T) != sizeof(long) &&
+                                sizeof(T) == sizeof(Impl::cas128_t),
+                            const T>::type val) {
+  union U {
+    Impl::cas128_t i;
+    T t;
+    inline U() {}
+  } assume, oldval, newval;
+
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+
+  oldval.t = *dest;
+
+  do {
+    assume.i = oldval.i;
+    newval.t = assume.t + val;
+    oldval.i = Impl::cas128((volatile Impl::cas128_t*)dest, assume.i, newval.i);
+  } while (assume.i != oldval.i);
+
+  return oldval.t;
+}
+#endif
+
+//----------------------------------------------------------------------------
+
+template <typename T>
+inline T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8)
+#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
+                                && (sizeof(T) != 16)
+#endif
+                                ,
+                            const T>::type& val) {
+  while (!Impl::lock_address_host_space((void*)dest))
+    ;
+  Kokkos::memory_fence();
+  T return_val = *dest;
+
+  // Don't use the following line of code here:
+  //
+  // const T tmp = *dest = return_val + val;
+  //
+  // Instead, put each assignment in its own statement.  This is
+  // because the overload of T::operator= for volatile *this should
+  // return void, not volatile T&.  See Kokkos #177:
+  //
+  // https://github.com/kokkos/kokkos/issues/177
+  *dest       = return_val + val;
+  const T tmp = *dest;
+  (void)tmp;
+  Kokkos::memory_fence();
+  Impl::unlock_address_host_space((void*)dest);
+
+  return return_val;
+}
+//----------------------------------------------------------------------------
+#elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
+
+__inline char atomic_fetch_add(volatile char* const dest, const char& val) {
+  return InterlockedAdd(dest, val);
+}
+
+__inline short atomic_fetch_add(volatile short* const dest, const short& val) {
+  return InterlockedAdd(dest, val);
+}
+
+__inline int atomic_fetch_add(volatile int* const dest, const int& val) {
+  return InterlockedAdd((long*)dest, *((long*)&val));
+}
+
+__inline long atomic_fetch_add(volatile long* const dest, const long& val) {
+  return InterlockedAdd(dest, val);
+}
+
+__inline long long atomic_fetch_add(volatile long long* const dest,
+                                    const long long& val) {
+  return InterlockedAdd(dest, val);
+}
+
+__inline float atomic_fetch_add(volatile float* const dest, const float& val) {
+  return InterlockedAdd(dest, val);
+}
+
+#if (600 <= __CUDA_ARCH__)
+__inline double atomic_fetch_add(volatile double* const dest,
+                                 const double& val) {
+  return InterlockedAdd(dest, val);
+}
+#endif
+
+template <typename T>
+__inline T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(int), const T>::type val) {
+  return InterlockedAdd(dest, val);
+}
+
+template <typename T>
+__inline T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) != sizeof(int) &&
+                                sizeof(T) == sizeof(unsigned long long int),
+                            const T>::type val) {
+  return InterlockedAdd(dest, val);
+}
+
+#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
+template <typename T>
+inline T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) != sizeof(long) &&
+                                sizeof(T) != sizeof(long long) &&
+                                sizeof(T) == sizeof(Impl::cas128_t),
+                            const T&>::type val) {
+  //        union U {
+  //            Impl::cas128_t i;
+  //            T              t;
+  //            __inline U(){};
+  //        } assume, oldval, newval;
+  //
+  //#                    if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+  //#                    endif
+  //
+  //        oldval.t = *dest;
+  //
+  //        do
+  //        {
+  //            assume.i = oldval.i;
+  //            newval.t = assume.t + val;
+  //            // oldval.i = ::_InterlockedCompareExchange128( (volatile
+  //            Impl::cas128_t*) dest , assume.i , newval.i );
+  //        } while (::_InterlockedCompareExchange128((long long*)dest,
+  //        newval.i.upper, newval.i.lower, ((long long*)&compare)));
+
+  return InterlockedAdd(dest, val);
+}
+#endif
+
+template <typename T>
+__inline T atomic_fetch_add(
+    volatile T* const dest,
+    typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8)
+#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
+                                && (sizeof(T) != 16)
+#endif
+                                ,
+                            const T&>::type val) {
+  return InterlockedAdd(dest, val);
 }
 //----------------------------------------------------------------------------
 

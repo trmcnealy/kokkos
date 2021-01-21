@@ -59,7 +59,8 @@ namespace Kokkos {
 //----------------------------------------------------------------------------
 
 #if defined(KOKKOS_ENABLE_CUDA)
-#if defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)
+#if (defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)) && \
+    !defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 
 __inline__ __device__ int atomic_exchange(volatile int* const dest,
                                           const int val) {
@@ -359,169 +360,160 @@ inline void atomic_assign(
   Impl::unlock_address_host_space((void*)dest);
 }
 //----------------------------------------------------------------------------
-#elif defined( \
-    KOKKOS_ENABLE_WINDOWS_ATOMICS)  //&& !defined(KOKKOS_ENABLE_CUDA_ATOMICS)
+#elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 
-template <typename T>
-__inline T atomic_exchange(
-    volatile T* const dest,
-    typename std::enable_if<sizeof(T) == sizeof(long) &&
-                                sizeof(T) != sizeof(long long),
-                            const T&>::type val) {
-  //#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-  //#            endif
-  //
-  //        const long v = *((long*)&val); // Extract to be sure the value
-  //        doesn't change
-  //
-  //        long assumed;
-  //
-  //        union U {
-  //            T    val_T;
-  //            long val_type;
-  //            __inline U(){};
-  //        } old;
-  //
-  //        old.val_T = *dest;
-  //
-  //        do
-  //        {
-  //            assumed      = old.val_type;
-  //            old.val_type = InterlockedCompareExchange((volatile long*)dest,
-  //            assumed, v);
-  //        } while (assumed != old.val_type);
-
-  return InterlockedExchange(dest, val);
-}
-
-template <typename T>
-__inline T atomic_exchange(
-    volatile T* const dest,
-    typename std::enable_if<sizeof(T) != sizeof(long) &&
-                                sizeof(T) == sizeof(long long),
-                            const T&>::type val) {
-  //#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-  //#            endif
-  //
-  //        const long long v = *((long long*)&val); // Extract to be sure the
-  //        value doesn't change
-  //
-  //        long long assumed;
-  //
-  //        union U {
-  //            T         val_T;
-  //            long long val_type;
-  //            __inline U(){};
-  //        } old;
-  //
-  //        old.val_T = *dest;
-  //
-  //        do
-  //        {
-  //            assumed      = old.val_type;
-  //            old.val_type = _InterlockedCompareExchange64((volatile long
-  //            long*)dest, assumed, v);
-  //        } while (assumed != old.val_type);
-
-  return InterlockedExchange(dest, val);
-}
-
-#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
-template <typename T>
-__inline T atomic_exchange(
-    volatile T* const dest,
-    typename std::enable_if<sizeof(T) == sizeof(Impl::cas128_t), const T&>::type
-        val) {
-  //#                if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-  //#                endif
-  //
-  //        union U {
-  //            Impl::cas128_t i;
-  //            T              t;
-  //            __inline U(){};
-  //        } assume, oldval, newval;
-  //
-  //        oldval.t = *dest;
-  //        newval.t = val;
-  //
-  //        do
-  //        {
-  //            assume.i = oldval.i;
-  //            oldval.i = _InterlockedCompareExchange128((volatile long
-  //            long*)dest, *(long long*)&assume.i, *(long long*)&newval.i);
-  //        } while (assume.i != oldval.i);
-
-  return InterlockedExchange(dest, val);
-}
-#endif
-
-template <typename T>
-__inline T atomic_exchange(
-    volatile T* const dest,
-    typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8)
-#if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
-                                && (sizeof(T) != 16)
-#endif
-                                ,
-                            const T>::type& val) {
-  while (!Impl::lock_address_host_space((void*)dest))
-    ;
-  T return_val = *dest;
-  // Don't use the following line of code here:
-  //
-  // const T tmp = *dest = val;
-  //
-  // Instead, put each assignment in its own statement.  This is
-  // because the overload of T::operator= for volatile *this should
-  // return void, not volatile T&.  See Kokkos #177:
-  //
-  // https://github.com/kokkos/kokkos/issues/177
-  *dest       = val;
-  const T tmp = *dest;
-#ifndef KOKKOS_COMPILER_CLANG
-  (void)tmp;
-#endif
-  Impl::unlock_address_host_space((void*)dest);
-  return return_val;
-}
-
-template <typename T>
-__inline void atomic_assign(
-    volatile T* const dest,
-    typename std::enable_if<sizeof(T) == sizeof(long) ||
-                                sizeof(T) == sizeof(long long),
-                            const T&>::type val) {
-  //        typedef typename std::conditional<sizeof(T) == sizeof(long), long,
-  //        long long>::type type;
-  //
-  //#            if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-  //#            endif
-  //
-  //        const type v = *((type*)&val); // Extract to be sure the value
-  //        doesn't change
-  //
-  //        type assumed;
-  //
-  //        union U {
-  //            T    val_T;
-  //            type val_type;
-  //            __inline U(){};
-  //        } old;
-  //
-  //        old.val_T = *dest;
-  //
-  //        do
-  //        {
-  //            assumed      = old.val_type;
-  //            old.val_type = _InterlockedExchange64((volatile type*)dest,
-  //            assumed, v);
-  //        } while (assumed != old.val_type);
-
+__inline__ __device__ __host__ int atomic_exchange(volatile int* const dest,
+                                                   const int val) {
+#if defined(__CUDA_ARCH__)
+  // return __iAtomicExch( (int*) dest , val );
+  return atomicExch((int*)dest, val);
+#else
   InterlockedExchange(dest, val);
+#endif
+}
+
+__inline__ __device__ __host__ unsigned int atomic_exchange(
+    volatile unsigned int* const dest, const unsigned int val) {
+#if defined(__CUDA_ARCH__)
+  // return __uAtomicExch( (unsigned int*) dest , val );
+  return atomicExch((unsigned int*)dest, val);
+#else
+  InterlockedExchange(dest, val);
+#endif
+}
+
+__inline__ __device__ __host__ unsigned long long int atomic_exchange(
+    volatile unsigned long long int* const dest,
+    const unsigned long long int val) {
+#if defined(__CUDA_ARCH__)
+  // return __ullAtomicExch( (unsigned long long*) dest , val );
+  return atomicExch((unsigned long long*)dest, val);
+#else
+  InterlockedExchange((unsigned long long*)dest, val);
+#endif
+}
+
+/** \brief  Atomic exchange for any type with compatible size */
+template <typename T>
+__inline__ __device__ __host__ T atomic_exchange(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(int), const T&>::type val) {
+#if defined(__CUDA_ARCH__)
+  // int tmp = __ullAtomicExch( (int*) dest , *((int*)&val) );
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  int tmp = atomicExch(((int*)dest), *((int*)&val));
+  return *((T*)&tmp);
+#else
+  int tmp = InterlockedExchange(((int*)dest), *((int*)&val));
+  return *((T*)&tmp);
+#endif
+}
+
+template <typename T>
+__inline__ __device__ __host__ T atomic_exchange(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) != sizeof(int) &&
+                                sizeof(T) == sizeof(unsigned long long int),
+                            const T&>::type val) {
+  using type = unsigned long long int;
+#if defined(__CUDA_ARCH__)
+
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  // type tmp = __ullAtomicExch( (type*) dest , *((type*)&val) );
+  type tmp = atomicExch(((type*)dest), *((type*)&val));
+  return *((T*)&tmp);
+#else
+  type tmp = InterlockedExchange(((type*)dest), *((type*)&val));
+  return *((T*)&tmp);
+#endif
+}
+
+template <typename T>
+__inline__ __device__ __host__ T
+atomic_exchange(volatile T* const dest,
+                typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8),
+                                        const T>::type& val) {
+#if defined(__CUDA_ARCH__)
+  T return_val;
+  // This is a way to (hopefully) avoid dead lock in a warp
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+
+  int done = 0;
+#ifdef KOKKOS_IMPL_CUDA_SYNCWARP_NEEDS_MASK
+  unsigned int mask   = KOKKOS_IMPL_CUDA_ACTIVEMASK;
+  unsigned int active = KOKKOS_IMPL_CUDA_BALLOT_MASK(mask, 1);
+#else
+  unsigned int active = KOKKOS_IMPL_CUDA_BALLOT(1);
+#endif
+  unsigned int done_active = 0;
+  while (active != done_active) {
+    if (!done) {
+      if (Impl::lock_address_cuda_space((void*)dest)) {
+        Kokkos::memory_fence();
+        return_val = *dest;
+        *dest      = val;
+        Kokkos::memory_fence();
+        Impl::unlock_address_cuda_space((void*)dest);
+        done = 1;
+      }
+    }
+#ifdef KOKKOS_IMPL_CUDA_SYNCWARP_NEEDS_MASK
+    done_active = KOKKOS_IMPL_CUDA_BALLOT_MASK(mask, done);
+#else
+    done_active = KOKKOS_IMPL_CUDA_BALLOT(done);
+#endif
+  }
+  return return_val;
+#else
+  return InterlockedExchange(dest, val);
+#endif
+}
+
+/** \brief  Atomic exchange for any type with compatible size */
+template <typename T>
+__inline__ __device__ __host__ void atomic_assign(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) == sizeof(int), const T&>::type val) {
+#if defined(__CUDA_ARCH__)
+  // (void) __ullAtomicExch( (int*) dest , *((int*)&val) );
+  (void)atomicExch(((int*)dest), *((int*)&val));
+#else
+  InterlockedExchange(dest, val);
+#endif
+}
+
+template <typename T>
+__inline__ __device__ __host__ void atomic_assign(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) != sizeof(int) &&
+                                sizeof(T) == sizeof(unsigned long long int),
+                            const T&>::type val) {
+#if defined(__CUDA_ARCH__)
+  using type = unsigned long long int;
+  // (void) __ullAtomicExch( (type*) dest , *((type*)&val) );
+  (void)atomicExch(((type*)dest), *((type*)&val));
+#else
+  InterlockedExchange(dest, val);
+#endif
+}
+
+template <typename T>
+__inline__ __device__ __host__ void atomic_assign(
+    volatile T* const dest,
+    typename std::enable_if<sizeof(T) != sizeof(int) &&
+                                sizeof(T) != sizeof(unsigned long long int),
+                            const T&>::type val) {
+#if defined(__CUDA_ARCH__)
+  (void)atomic_exchange(dest, val);
+#else
+  InterlockedExchange(dest, val);
+#endif
 }
 
 #elif defined(KOKKOS_ENABLE_OPENMP_ATOMICS)

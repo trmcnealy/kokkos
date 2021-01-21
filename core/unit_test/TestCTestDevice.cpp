@@ -9,7 +9,7 @@ int get_ctest_gpu(const char *local_rank_str);
 }  // namespace Impl
 }  // namespace Kokkos
 
-#ifdef _WIN32
+#ifdef _WINDOWS
 int setenv(const char *name, const char *value, int overwrite) {
   // int errcode = 0;
   // if (!overwrite) {

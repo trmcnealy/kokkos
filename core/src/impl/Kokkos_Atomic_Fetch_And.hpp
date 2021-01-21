@@ -77,48 +77,7 @@ __inline__ __device__ unsigned long long int atomic_fetch_and(
   return atomicAnd((unsigned long long int*)dest, val);
 }
 #endif
-#endif
-#endif
-//----------------------------------------------------------------------------
-#if !defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)
-#if defined(KOKKOS_ENABLE_GNU_ATOMICS) || defined(KOKKOS_ENABLE_INTEL_ATOMICS)
 
-inline int atomic_fetch_and(volatile int* const dest, const int val) {
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-  return __sync_fetch_and_and(dest, val);
-}
-
-inline long int atomic_fetch_and(volatile long int* const dest,
-                                 const long int val) {
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-  return __sync_fetch_and_and(dest, val);
-}
-
-#if defined(KOKKOS_ENABLE_GNU_ATOMICS)
-
-inline unsigned int atomic_fetch_and(volatile unsigned int* const dest,
-                                     const unsigned int val) {
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-  return __sync_fetch_and_and(dest, val);
-}
-
-inline unsigned long int atomic_fetch_and(
-    volatile unsigned long int* const dest, const unsigned long int val) {
-#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-#endif
-  return __sync_fetch_and_and(dest, val);
-}
-
-#endif
-
-//----------------------------------------------------------------------------
 #elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 
 __inline __device__ __host__ int atomic_fetch_and(volatile int* const dest,
@@ -191,6 +150,106 @@ __inline __device__ __host__ unsigned long long atomic_fetch_and(
 #endif
   return InterlockedAnd(dest, val);
 #endif
+}
+
+//----------------------------------------------------------------------------
+
+#endif
+
+#endif
+//----------------------------------------------------------------------------
+#if (!defined(__CUDA_ARCH__) || defined(KOKKOS_IMPL_CUDA_CLANG_WORKAROUND)) && \
+    !defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
+#if defined(KOKKOS_ENABLE_GNU_ATOMICS) || defined(KOKKOS_ENABLE_INTEL_ATOMICS)
+
+inline int atomic_fetch_and(volatile int* const dest, const int val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return __sync_fetch_and_and(dest, val);
+}
+
+inline long int atomic_fetch_and(volatile long int* const dest,
+                                 const long int val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return __sync_fetch_and_and(dest, val);
+}
+
+#if defined(KOKKOS_ENABLE_GNU_ATOMICS)
+
+inline unsigned int atomic_fetch_and(volatile unsigned int* const dest,
+                                     const unsigned int val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return __sync_fetch_and_and(dest, val);
+}
+
+inline unsigned long int atomic_fetch_and(
+    volatile unsigned long int* const dest, const unsigned long int val) {
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return __sync_fetch_and_and(dest, val);
+}
+
+#endif
+
+//----------------------------------------------------------------------------
+#elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
+
+__inline int atomic_fetch_and(volatile int* const dest, const int& val) {
+
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return InterlockedAnd(dest, val);
+}
+
+__inline unsigned int atomic_fetch_and(volatile unsigned int* const dest,
+                                       const unsigned int& val) {
+
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return InterlockedAnd(dest, val);
+}
+
+__inline long atomic_fetch_and(volatile long* const dest, const long& val) {
+
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return InterlockedAnd(dest, val);
+}
+
+__inline long long atomic_fetch_and(volatile long long* const dest,
+                                    const long long& val) {
+
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return InterlockedAnd(dest, val);
+}
+
+__inline unsigned long atomic_fetch_and(volatile unsigned long* const dest,
+                                        const unsigned long& val) {
+
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return InterlockedAnd(dest, val);
+}
+
+__inline unsigned long long atomic_fetch_and(
+    volatile unsigned long long* const dest, const unsigned long long& val) {
+
+#if defined(KOKKOS_ENABLE_RFO_PREFETCH)
+  _mm_prefetch((const char*)dest, _MM_HINT_ET0);
+#endif
+  return InterlockedAnd(dest, val);
 }
 
 //----------------------------------------------------------------------------

@@ -148,6 +148,42 @@ struct SuperScalar {
 };
 
 template <int N>
+KOKKOS_INLINE_FUNCTION static SuperScalar<N> operator+(const SuperScalar<N>& lhs, const SuperScalar<N>& rhs) {
+  SuperScalar<N> tmp;
+  for (int i = 0; i < N; i++) {
+    tmp.val[i] = lhs.val[i] + rhs.val[i];
+  }
+  return tmp;
+}
+
+template <int N>
+KOKKOS_INLINE_FUNCTION static SuperScalar<N> operator-(const SuperScalar<N>& lhs, const SuperScalar<N>& rhs) {
+  SuperScalar<N> tmp;
+  for (int i = 0; i < N; i++) {
+    tmp.val[i] = lhs.val[i] - rhs.val[i];
+  }
+  return tmp;
+}
+
+template <int N>
+KOKKOS_INLINE_FUNCTION static SuperScalar<N> operator*(const SuperScalar<N>& lhs, const SuperScalar<N>& rhs) {
+  SuperScalar<N> tmp;
+  for (int i = 0; i < N; i++) {
+    tmp.val[i] = lhs.val[i] * rhs.val[i];
+  }
+  return tmp;
+}
+
+template <int N>
+KOKKOS_INLINE_FUNCTION static SuperScalar<N> operator/(const SuperScalar<N>& lhs, const SuperScalar<N>& rhs) {
+  SuperScalar<N> tmp;
+  for (int i = 0; i < N; i++) {
+    tmp.val[i] = lhs.val[i] / rhs.val[i];
+  }
+  return tmp;
+}
+
+template <int N>
 std::ostream& operator<<(std::ostream& os, const SuperScalar<N>& dt) {
   os << "{ ";
   for (int i = 0; i < N - 1; i++) {
@@ -555,7 +591,7 @@ TEST(TEST_CATEGORY, atomics) {
       (TestAtomic::Loop<Kokkos::complex<double>, TEST_EXECSPACE>(100, 3)));
 
 // WORKAROUND MSVC
-#ifndef _WIN32
+#ifndef _MSC_VER
   ASSERT_TRUE(
       (TestAtomic::Loop<TestAtomic::SuperScalar<4>, TEST_EXECSPACE>(100, 1)));
   ASSERT_TRUE(

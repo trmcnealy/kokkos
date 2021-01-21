@@ -307,67 +307,65 @@ SIGNED_INTERLOCKED(long, )
 
 SIGNED_INTERLOCKED(__int64, 64)
 
-inline static float InterlockedAdd(float volatile* const dest, const float& value)
-  {
-      const volatile float oldValue = *(float*)dest;
-      const float calcVal  = (oldValue + value);
-      const float newVal   = calcVal;
+inline static float InterlockedAdd(float volatile* const dest,
+                                   const float& value) {
+  const volatile float oldValue = *(float*)dest;
+  const float calcVal           = (oldValue + value);
+  const float newVal            = calcVal;
 
-      union V {
-          long i;
-          float t;
-          inline V() {};
-      } newval, oldval;
+  union V {
+    long i;
+    float t;
+    inline V(){};
+  } newval, oldval;
 
-      newval.t = value;
-      oldval.t = oldValue;
+  newval.t = value;
+  oldval.t = oldValue;
 
-      union Vol {
-          long volatile* i;
-          float volatile* t;
-          inline Vol() {};
-      } newdest;
+  union Vol {
+    long volatile* i;
+    float volatile* t;
+    inline Vol(){};
+  } newdest;
 
-      newdest.t = dest;
+  newdest.t = dest;
 
-      do
-      {
-          ;
-      } while (oldval.i != ::_InterlockedExchangeAdd(newdest.i, newval.i));
+  do {
+    ;
+  } while (oldval.i != ::_InterlockedExchangeAdd(newdest.i, newval.i));
 
-      return oldValue;
-  }
+  return oldValue;
+}
 
-  inline static double InterlockedAdd(double volatile* const dest, const double& value)
-  {
-      const volatile double oldValue = *(double*)dest;
-      const double calcVal  = (oldValue + value);
-      const double newVal   = calcVal;
+inline static double InterlockedAdd(double volatile* const dest,
+                                    const double& value) {
+  const volatile double oldValue = *(double*)dest;
+  const double calcVal           = (oldValue + value);
+  const double newVal            = calcVal;
 
-      union V {
-          __int64 i;
-          double t;
-          inline V() {};
-      } newval, oldval;
+  union V {
+    __int64 i;
+    double t;
+    inline V(){};
+  } newval, oldval;
 
-      newval.t = value;
-      oldval.t = oldValue;
+  newval.t = value;
+  oldval.t = oldValue;
 
-      union Vol {
-          __int64 volatile* i;
-          double volatile* t;
-          inline Vol() {};
-      } newdest;
+  union Vol {
+    __int64 volatile* i;
+    double volatile* t;
+    inline Vol(){};
+  } newdest;
 
-      newdest.t = dest;
+  newdest.t = dest;
 
-      do
-      {
-          ;
-      } while (oldval.i != ::_InterlockedExchangeAdd64(newdest.i, newval.i));
+  do {
+    ;
+  } while (oldval.i != ::_InterlockedExchangeAdd64(newdest.i, newval.i));
 
-      return oldValue;
-  }
+  return oldValue;
+}
 
 #pragma region Interlocked 128
 
@@ -430,6 +428,17 @@ inline T InterlockedSub(
   } while (oldValue != InterlockedCompareExchange(dest, newVal, oldValue));
 
   return *(T*)&oldValue;
+}
+
+// TODO
+template <typename T>
+inline T InterlockedExchange(
+    void* volatile* dest,
+    typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8), void*>::type&
+        val) {
+  const __int64 oldValue = *(__int64*)dest;
+  *dest                  = val;
+  return oldValue;
 }
 
 #pragma endregion

@@ -298,6 +298,8 @@ class AtomicDataElement {
     return *ptr >> val;
   }
 
+#if __cplusplus < 202002L
+
   KOKKOS_INLINE_FUNCTION
   bool operator==(const_value_type& val) const { return *ptr == val; }
   KOKKOS_INLINE_FUNCTION
@@ -327,6 +329,20 @@ class AtomicDataElement {
   bool operator>(const_value_type& val) const { return *ptr > val; }
   KOKKOS_INLINE_FUNCTION
   bool operator>(volatile const_value_type& val) const { return *ptr > val; }
+
+#else
+
+  KOKKOS_INLINE_FUNCTION
+  constexpr auto operator<=>(const_value_type& val) const {
+      return *ptr <=> val;
+  }
+
+  KOKKOS_INLINE_FUNCTION
+  constexpr auto operator<=>(volatile const_value_type& val) const {
+      return *ptr <=> val;
+  }
+  
+#endif
 
   KOKKOS_INLINE_FUNCTION
   operator const_value_type() const {
