@@ -179,7 +179,7 @@ __inline __device__ __host__ int atomic_fetch_sub(volatile int* const dest,
 #if defined(__CUDA_ARCH__)
   return atomicSub((int*)dest, val);
 #else
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 #endif
 }
 
@@ -188,7 +188,7 @@ __inline__ __device__ __host__ __host__ unsigned int atomic_fetch_sub(
 #if defined(__CUDA_ARCH__)
   return atomicSub((unsigned int*)dest, val);
 #else
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 #endif
 }
 
@@ -197,7 +197,7 @@ __inline__ __device__ __host__ unsigned int atomic_fetch_sub(
 #if defined(__CUDA_ARCH__)
   return atomic_fetch_add(dest, -val);
 #else
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 #endif
 }
 
@@ -206,7 +206,7 @@ __inline__ __device__ __host__ unsigned int atomic_fetch_sub(
 #if defined(__CUDA_ARCH__)
   return atomicAdd((float*)dest, -val);
 #else
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 #endif
 }
 
@@ -216,7 +216,7 @@ __inline__ __device__ __host__ unsigned int atomic_fetch_sub(
 #if defined(__CUDA_ARCH__)
   return atomicAdd((double*)dest, -val);
 #else
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 #endif
 }
 #endif
@@ -242,7 +242,7 @@ __inline__ __device__ __host__ T atomic_fetch_sub(
 
   return oldval.t;
 #else
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 #endif
 }
 
@@ -269,7 +269,7 @@ __inline __device__ __host__ T atomic_fetch_sub(
 
   return oldval.t;
 #else
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 #endif
 }
 
@@ -433,23 +433,23 @@ __inline int atomic_fetch_sub(volatile int* const dest, const int val) {}
 
 __inline__ __host__ unsigned int atomic_fetch_sub(
     volatile unsigned int* const dest, const unsigned int val) {
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 }
 
 __inline__ unsigned int atomic_fetch_sub(volatile int64_t* const dest,
                                          const int64_t val) {
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 }
 
 __inline__ unsigned int atomic_fetch_sub(volatile float* const dest,
                                          const float val) {
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 }
 
 #if (600 <= __CUDA_ARCH__)
 __inline__ unsigned int atomic_fetch_sub(volatile double* const dest,
                                          const double val) {
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 }
 #endif
 
@@ -457,7 +457,7 @@ template <typename T>
 __inline__ T atomic_fetch_sub(
     volatile T* const dest,
     typename std::enable_if<sizeof(T) == sizeof(int), const T>::type val) {
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 }
 
 template <typename T>
@@ -466,7 +466,7 @@ __inline T atomic_fetch_sub(
     typename std::enable_if<sizeof(T) != sizeof(int) &&
                                 sizeof(T) == sizeof(unsigned long long int),
                             const T>::type val) {
-  return InterlockedSub(dest, val);
+  return Windows::Sub(dest, val);
 }
 
 //----------------------------------------------------------------------------

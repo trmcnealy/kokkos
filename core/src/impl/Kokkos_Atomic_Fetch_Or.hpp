@@ -126,7 +126,7 @@ __inline __device__ __host__ int atomic_fetch_or(volatile int* const dest,
 #if defined(__CUDA_ARCH__)
   return atomicOr((int*)dest, val);
 #else
-  return InterlockedOr(dest, val);
+  return Windows::Or(dest, val);
 #endif
 }
 
@@ -135,7 +135,7 @@ __inline __device__ __host__ unsigned int atomic_fetch_or(
 #if defined(__CUDA_ARCH__)
   return atomicOr((unsigned int*)dest, val);
 #else
-  return InterlockedOr(dest, val);
+  return Windows::Or(dest, val);
 #endif
 }
 
@@ -144,7 +144,7 @@ __inline __device__ __host__ long atomic_fetch_or(volatile long* const dest,
 #if defined(__CUDA_ARCH__)
   return atomicOr((int*)dest, (int)val);
 #else
-  return InterlockedOr(dest, val);
+  return Windows::Or(dest, val);
 #endif
 }
 
@@ -153,7 +153,7 @@ __inline __device__ __host__ long long atomic_fetch_or(
 #if defined(__CUDA_ARCH__)
   return atomicOr((unsigned long long int*)dest, (unsigned long long int)val);
 #else
-  return InterlockedOr(dest, val);
+  return Windows::Or(dest, val);
 #endif
 }
 
@@ -162,7 +162,7 @@ __inline __device__ __host__ unsigned long atomic_fetch_or(
 #if defined(__CUDA_ARCH__)
   return atomicOr((unsigned int*)dest, (unsigned int)val);
 #else
-  return InterlockedOr(dest, val);
+  return Windows::Or(dest, val);
 #endif
 }
 
@@ -171,7 +171,7 @@ __inline __device__ __host__ unsigned long long atomic_fetch_or(
 #if defined(__CUDA_ARCH__)
   return atomicOr((unsigned long long int*)dest, val);
 #else
-  return InterlockedOr(dest, val);
+  return Windows::Or(dest, val);
 #endif
 }
 

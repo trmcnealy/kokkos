@@ -635,7 +635,7 @@
 // to enable the task policy.
 
 #if defined(KOKKOS_ENABLE_CUDA)
-#if defined(KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE)
+#if defined(KOKKOS_ENABLE_CUDA_RELOCATABLE_DEVICE_CODE) || defined(_WINDOWS)
 #define KOKKOS_ENABLE_TASKDAG
 #endif
 #else

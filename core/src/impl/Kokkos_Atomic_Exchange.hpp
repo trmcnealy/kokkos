@@ -368,7 +368,7 @@ __inline__ __device__ __host__ int atomic_exchange(volatile int* const dest,
   // return __iAtomicExch( (int*) dest , val );
   return atomicExch((int*)dest, val);
 #else
-  InterlockedExchange(dest, val);
+  Windows::Exchange(dest, val);
 #endif
 }
 
@@ -378,7 +378,7 @@ __inline__ __device__ __host__ unsigned int atomic_exchange(
   // return __uAtomicExch( (unsigned int*) dest , val );
   return atomicExch((unsigned int*)dest, val);
 #else
-  InterlockedExchange(dest, val);
+  Windows::Exchange(dest, val);
 #endif
 }
 
@@ -389,7 +389,7 @@ __inline__ __device__ __host__ unsigned long long int atomic_exchange(
   // return __ullAtomicExch( (unsigned long long*) dest , val );
   return atomicExch((unsigned long long*)dest, val);
 #else
-  InterlockedExchange((unsigned long long*)dest, val);
+  Windows::Exchange((unsigned long long*)dest, val);
 #endif
 }
 
@@ -406,7 +406,7 @@ __inline__ __device__ __host__ T atomic_exchange(
   int tmp = atomicExch(((int*)dest), *((int*)&val));
   return *((T*)&tmp);
 #else
-  int tmp = InterlockedExchange(((int*)dest), *((int*)&val));
+  int tmp = Windows::Exchange(((int*)dest), *((int*)&val));
   return *((T*)&tmp);
 #endif
 }
@@ -427,7 +427,7 @@ __inline__ __device__ __host__ T atomic_exchange(
   type tmp = atomicExch(((type*)dest), *((type*)&val));
   return *((T*)&tmp);
 #else
-  type tmp = InterlockedExchange(((type*)dest), *((type*)&val));
+  type tmp = Windows::Exchange(((type*)dest), *((type*)&val));
   return *((T*)&tmp);
 #endif
 }
@@ -471,7 +471,7 @@ atomic_exchange(volatile T* const dest,
   }
   return return_val;
 #else
-  return InterlockedExchange(dest, val);
+  return Windows::Exchange(dest, val);
 #endif
 }
 
@@ -484,7 +484,7 @@ __inline__ __device__ __host__ void atomic_assign(
   // (void) __ullAtomicExch( (int*) dest , *((int*)&val) );
   (void)atomicExch(((int*)dest), *((int*)&val));
 #else
-  InterlockedExchange(dest, val);
+  Windows::Exchange(dest, val);
 #endif
 }
 
@@ -499,7 +499,7 @@ __inline__ __device__ __host__ void atomic_assign(
   // (void) __ullAtomicExch( (type*) dest , *((type*)&val) );
   (void)atomicExch(((type*)dest), *((type*)&val));
 #else
-  InterlockedExchange(dest, val);
+  Windows::Exchange(dest, val);
 #endif
 }
 
@@ -512,7 +512,7 @@ __inline__ __device__ __host__ void atomic_assign(
 #if defined(__CUDA_ARCH__)
   (void)atomic_exchange(dest, val);
 #else
-  InterlockedExchange(dest, val);
+  Windows::Exchange(dest, val);
 #endif
 }
 

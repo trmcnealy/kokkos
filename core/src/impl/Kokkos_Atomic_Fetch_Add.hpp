@@ -186,7 +186,7 @@ __inline __device__ __host__ char atomic_fetch_add(volatile char* const dest,
 #if defined(__CUDA_ARCH__)
   return atomicAdd((int*)dest, (int)val);
 #else
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 #endif
 }
 
@@ -195,7 +195,7 @@ __inline __device__ __host__ short atomic_fetch_add(volatile short* const dest,
 #if defined(__CUDA_ARCH__)
   return atomicAdd((int*)dest, (int)val);
 #else
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 #endif
 }
 
@@ -204,7 +204,7 @@ __inline __device__ __host__ int atomic_fetch_add(volatile int* const dest,
 #if defined(__CUDA_ARCH__)
   return atomicAdd((int*)dest, (int)val);
 #else
-  return InterlockedAdd((long*)dest, *((long*)&val));
+  return Windows::Add((long*)dest, *((long*)&val));
 #endif
 }
 
@@ -213,7 +213,7 @@ __inline __device__ __host__ long atomic_fetch_add(volatile long* const dest,
 #if defined(__CUDA_ARCH__)
   return atomicAdd((int*)dest, (int)val);
 #else
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 #endif
 }
 
@@ -222,7 +222,7 @@ __inline __device__ __host__ long long atomic_fetch_add(
 #if defined(__CUDA_ARCH__)
   return atomicAdd((unsigned long long int*)dest, (unsigned long long int)val);
 #else
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 #endif
 }
 
@@ -231,7 +231,7 @@ __inline __device__ __host__ float atomic_fetch_add(volatile float* const dest,
 #if defined(__CUDA_ARCH__)
   return atomicAdd((float*)dest, val);
 #else
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 #endif
 }
 
@@ -241,7 +241,7 @@ __inline __device__ __host__ double atomic_fetch_add(
 #if defined(__CUDA_ARCH__)
   return atomicAdd((double*)dest, val);
 #else
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 #endif
 }
 #endif
@@ -269,7 +269,7 @@ __inline __device__ __host__ T atomic_fetch_add(
 
   return oldval.t;
 #else
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 #endif
 }
 
@@ -298,7 +298,7 @@ __inline __device__ __host__ T atomic_fetch_add(
 
   return oldval.t;
 #else
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 #endif
 }
 
@@ -310,28 +310,7 @@ inline T atomic_fetch_add(
                                 sizeof(T) != sizeof(long long) &&
                                 sizeof(T) == sizeof(Impl::cas128_t),
                             const T&>::type val) {
-  //        union U {
-  //            Impl::cas128_t i;
-  //            T              t;
-  //            __inline U(){};
-  //        } assume, oldval, newval;
-  //
-  //#                    if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-  //#                    endif
-  //
-  //        oldval.t = *dest;
-  //
-  //        do
-  //        {
-  //            assume.i = oldval.i;
-  //            newval.t = assume.t + val;
-  //            // oldval.i = ::_InterlockedCompareExchange128( (volatile
-  //            Impl::cas128_t*) dest , assume.i , newval.i );
-  //        } while (::_InterlockedCompareExchange128((long long*)dest,
-  //        newval.i.upper, newval.i.lower, ((long long*)&compare)));
-
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 #endif
 
@@ -365,7 +344,7 @@ atomic_fetch_add(volatile T* const dest,
 
   return return_val;
 #else
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 #endif
 }
 //----------------------------------------------------------------------------
@@ -549,34 +528,34 @@ inline T atomic_fetch_add(
 #elif defined(KOKKOS_ENABLE_WINDOWS_ATOMICS)
 
 __inline char atomic_fetch_add(volatile char* const dest, const char& val) {
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 
 __inline short atomic_fetch_add(volatile short* const dest, const short& val) {
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 
 __inline int atomic_fetch_add(volatile int* const dest, const int& val) {
-  return InterlockedAdd((long*)dest, *((long*)&val));
+  return Windows::Add((long*)dest, *((long*)&val));
 }
 
 __inline long atomic_fetch_add(volatile long* const dest, const long& val) {
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 
 __inline long long atomic_fetch_add(volatile long long* const dest,
                                     const long long& val) {
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 
 __inline float atomic_fetch_add(volatile float* const dest, const float& val) {
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 
 #if (600 <= __CUDA_ARCH__)
 __inline double atomic_fetch_add(volatile double* const dest,
                                  const double& val) {
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 #endif
 
@@ -584,7 +563,7 @@ template <typename T>
 __inline T atomic_fetch_add(
     volatile T* const dest,
     typename std::enable_if<sizeof(T) == sizeof(int), const T>::type val) {
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 
 template <typename T>
@@ -593,7 +572,7 @@ __inline T atomic_fetch_add(
     typename std::enable_if<sizeof(T) != sizeof(int) &&
                                 sizeof(T) == sizeof(unsigned long long int),
                             const T>::type val) {
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 
 #if defined(KOKKOS_ENABLE_ASM) && defined(KOKKOS_ENABLE_ISA_X86_64)
@@ -604,28 +583,7 @@ inline T atomic_fetch_add(
                                 sizeof(T) != sizeof(long long) &&
                                 sizeof(T) == sizeof(Impl::cas128_t),
                             const T&>::type val) {
-  //        union U {
-  //            Impl::cas128_t i;
-  //            T              t;
-  //            __inline U(){};
-  //        } assume, oldval, newval;
-  //
-  //#                    if defined(KOKKOS_ENABLE_RFO_PREFETCH)
-  //        _mm_prefetch((const char*)dest, _MM_HINT_ET0);
-  //#                    endif
-  //
-  //        oldval.t = *dest;
-  //
-  //        do
-  //        {
-  //            assume.i = oldval.i;
-  //            newval.t = assume.t + val;
-  //            // oldval.i = ::_InterlockedCompareExchange128( (volatile
-  //            Impl::cas128_t*) dest , assume.i , newval.i );
-  //        } while (::_InterlockedCompareExchange128((long long*)dest,
-  //        newval.i.upper, newval.i.lower, ((long long*)&compare)));
-
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 #endif
 
@@ -638,7 +596,7 @@ __inline T atomic_fetch_add(
 #endif
                                 ,
                             const T&>::type val) {
-  return InterlockedAdd(dest, val);
+  return Windows::Add(dest, val);
 }
 //----------------------------------------------------------------------------
 

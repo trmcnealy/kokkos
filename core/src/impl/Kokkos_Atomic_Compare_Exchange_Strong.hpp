@@ -295,7 +295,7 @@ inline int atomic_compare_exchange(volatile int* const dest, const int& compare,
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedCompareExchange(dest, compare, val);
+  return Windows::CompareExchange(dest, compare, val);
 }
 
 inline long atomic_compare_exchange(volatile long long* const dest,
@@ -304,7 +304,7 @@ inline long atomic_compare_exchange(volatile long long* const dest,
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedCompareExchange(dest, compare, val);
+  return Windows::CompareExchange(dest, compare, val);
 }
 
 #if defined(KOKKOS_ENABLE_GNU_ATOMICS)
@@ -339,7 +339,7 @@ inline T atomic_compare_exchange(
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
 
-  tmp.i = InterlockedCompareExchange((long*)dest, *((long*)&compare),
+  tmp.i = Windows::CompareExchange((long*)dest, *((long*)&compare),
                                      *((long*)&val));
   return tmp.t;
 }
@@ -360,7 +360,7 @@ inline T atomic_compare_exchange(
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
 
-  tmp.i = InterlockedCompareExchange((long long*)dest, *((long long*)&compare),
+  tmp.i = Windows::CompareExchange((long long*)dest, *((long long*)&compare),
                                      *((long long*)&val));
   return tmp.t;
 }

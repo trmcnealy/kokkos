@@ -88,7 +88,7 @@ __inline __device__ __host__ int atomic_fetch_and(volatile int* const dest,
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 #endif
 }
 
@@ -100,7 +100,7 @@ __inline __device__ __host__ unsigned int atomic_fetch_and(
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 #endif
 }
 
@@ -112,7 +112,7 @@ __inline __device__ __host__ long atomic_fetch_and(volatile long* const dest,
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 #endif
 }
 
@@ -124,7 +124,7 @@ __inline __device__ __host__ long long atomic_fetch_and(
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 #endif
 }
 
@@ -136,7 +136,7 @@ __inline __device__ __host__ unsigned long atomic_fetch_and(
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 #endif
 }
 
@@ -148,7 +148,7 @@ __inline __device__ __host__ unsigned long long atomic_fetch_and(
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 #endif
 }
 
@@ -205,7 +205,7 @@ __inline int atomic_fetch_and(volatile int* const dest, const int& val) {
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 }
 
 __inline unsigned int atomic_fetch_and(volatile unsigned int* const dest,
@@ -214,7 +214,7 @@ __inline unsigned int atomic_fetch_and(volatile unsigned int* const dest,
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 }
 
 __inline long atomic_fetch_and(volatile long* const dest, const long& val) {
@@ -222,7 +222,7 @@ __inline long atomic_fetch_and(volatile long* const dest, const long& val) {
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 }
 
 __inline long long atomic_fetch_and(volatile long long* const dest,
@@ -231,7 +231,7 @@ __inline long long atomic_fetch_and(volatile long long* const dest,
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 }
 
 __inline unsigned long atomic_fetch_and(volatile unsigned long* const dest,
@@ -240,7 +240,7 @@ __inline unsigned long atomic_fetch_and(volatile unsigned long* const dest,
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 }
 
 __inline unsigned long long atomic_fetch_and(
@@ -249,7 +249,7 @@ __inline unsigned long long atomic_fetch_and(
 #if defined(KOKKOS_ENABLE_RFO_PREFETCH)
   _mm_prefetch((const char*)dest, _MM_HINT_ET0);
 #endif
-  return InterlockedAnd(dest, val);
+  return Windows::And(dest, val);
 }
 
 //----------------------------------------------------------------------------

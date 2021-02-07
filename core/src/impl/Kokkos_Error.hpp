@@ -189,13 +189,17 @@ class RawMemoryAllocationFailure : public std::bad_alloc {
 
 namespace Kokkos {
 KOKKOS_IMPL_ABORT_NORETURN KOKKOS_INLINE_FUNCTION void abort(
-    const char *const message) {
+    const char *const message, const char* file = __FILE__, const unsigned line = __LINE__) {
 #if defined(KOKKOS_ENABLE_CUDA) && defined(__CUDA_ARCH__)
-  Kokkos::Impl::cuda_abort(message);
+  //Kokkos::Impl::cuda_abort(message);
+  printf("\033[31m%s in %s @ %u\n%s\n\033[0m", "Cuda Exception", file, line, message);
+  asm("trap;");
 #elif defined(KOKKOS_ENABLE_HIP) && defined(__HIP_DEVICE_COMPILE__)
   Kokkos::Impl::hip_abort(message);
 #elif !defined(KOKKOS_ENABLE_OPENMPTARGET) && !defined(__HCC_ACCELERATOR__)
-  Kokkos::Impl::host_abort(message);
+  //Kokkos::Impl::host_abort(message);
+  printf("\033[31m%s in %s @ %u\n%s\n\033[0m", "Host Exception", file, line, message);
+  throw message;
 #endif
 }
 
