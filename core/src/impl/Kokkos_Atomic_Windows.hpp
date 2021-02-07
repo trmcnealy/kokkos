@@ -326,10 +326,11 @@ SIGNED_INTERLOCKED(long long, 64)
       __inline Vol() {}                                                      \
     } newdest;                                                               \
                                                                              \
+    oldval.t  = *dest;                                                       \
     newdest.t = dest;                                                        \
                                                                              \
     do {                                                                     \
-      oldval.t = *dest;                                                      \
+      ;                                                                      \
     } while (oldval.i !=                                                     \
              _InterlockedExchange##INTERLOCKED_SUF(newdest.i, newval.i));    \
     return oldval.t;                                                         \
@@ -352,10 +353,11 @@ SIGNED_INTERLOCKED(long long, 64)
       __inline Vol() {}                                                      \
     } newdest;                                                               \
                                                                              \
+    oldval.t  = *dest;                                                       \
     newdest.t = dest;                                                        \
                                                                              \
     do {                                                                     \
-      oldval.t = *dest;                                                      \
+      ;                                                                      \
     } while (oldval.i != _InterlockedCompareExchange##INTERLOCKED_SUF(       \
                              newdest.i, newval.i, assume.i));                \
     return oldval.t;                                                         \
@@ -376,10 +378,11 @@ SIGNED_INTERLOCKED(long long, 64)
       __inline Vol() {}                                                      \
     } newdest;                                                               \
                                                                              \
+    oldval.t  = *dest;                                                       \
     newdest.t = dest;                                                        \
                                                                              \
     do {                                                                     \
-      oldval.t = *dest;                                                      \
+      ;                                                                      \
     } while (oldval.i !=                                                     \
              _InterlockedExchangeAdd##INTERLOCKED_SUF(newdest.i, newval.i)); \
                                                                              \
@@ -401,10 +404,11 @@ SIGNED_INTERLOCKED(long long, 64)
       __inline Vol() {}                                                      \
     } newdest;                                                               \
                                                                              \
+    oldval.t  = *dest;                                                       \
     newdest.t = dest;                                                        \
                                                                              \
     do {                                                                     \
-      oldval.t = *dest;                                                      \
+      ;                                                                      \
     } while (oldval.i !=                                                     \
              _InterlockedAnd##INTERLOCKED_SUF(newdest.i, newval.i));         \
                                                                              \
@@ -426,10 +430,11 @@ SIGNED_INTERLOCKED(long long, 64)
       __inline Vol() {}                                                      \
     } newdest;                                                               \
                                                                              \
+    oldval.t  = *dest;                                                       \
     newdest.t = dest;                                                        \
                                                                              \
     do {                                                                     \
-      oldval.t = *dest;                                                      \
+      ;                                                                      \
     } while (oldval.i !=                                                     \
              _InterlockedOr##INTERLOCKED_SUF(newdest.i, newval.i));          \
                                                                              \
@@ -451,10 +456,11 @@ SIGNED_INTERLOCKED(long long, 64)
       __inline Vol() {}                                                      \
     } newdest;                                                               \
                                                                              \
+    oldval.t  = *dest;                                                       \
     newdest.t = dest;                                                        \
                                                                              \
     do {                                                                     \
-      oldval.t = *dest;                                                      \
+      ;                                                                      \
     } while (oldval.i !=                                                     \
              _InterlockedXor##INTERLOCKED_SUF(newdest.i, newval.i));         \
                                                                              \
@@ -474,10 +480,10 @@ SIGNED_INTERLOCKED(long long, 64)
       __inline Vol() {}                                                      \
     } newdest;                                                               \
                                                                              \
+    oldval.t  = *dest;                                                       \
     newdest.t = dest;                                                        \
                                                                              \
     do {                                                                     \
-      oldval.t = *dest;                                                      \
       newval.t = oldval.t + value;                                           \
     } while (oldval.i != _InterlockedCompareExchange##INTERLOCKED_SUF(       \
                              newdest.i, newval.i, oldval.i));                \
@@ -497,10 +503,10 @@ SIGNED_INTERLOCKED(long long, 64)
       __inline Vol() {}                                                      \
     } newdest;                                                               \
                                                                              \
+    oldval.t  = *dest;                                                       \
     newdest.t = dest;                                                        \
                                                                              \
     do {                                                                     \
-      oldval.t = *dest;                                                      \
       newval.t = oldval.t - value;                                           \
     } while (oldval.i != _InterlockedCompareExchange##INTERLOCKED_SUF(       \
                              newdest.i, newval.i, oldval.i));                \
@@ -531,10 +537,10 @@ __inline static float Add(float volatile *const dest, const float &value) {
     __inline Vol() {}
   } newdest;
 
+  oldval.t  = *dest;
   newdest.t = dest;
 
   do {
-    oldval.t = *dest;
     newval.t = oldval.t + value;
   } while (oldval.i !=
            _InterlockedCompareExchange(newdest.i, newval.i, oldval.i));
@@ -554,10 +560,10 @@ __inline static double Add(double volatile *const dest, const double &value) {
     __inline Vol() {}
   } newdest;
 
+  oldval.t  = *dest;
   newdest.t = dest;
 
   do {
-    oldval.t = *dest;
     newval.t = oldval.t + value;
   } while (oldval.i !=
            _InterlockedCompareExchange64(newdest.i, newval.i, oldval.i));
@@ -577,10 +583,10 @@ __inline static float Sub(float volatile *const dest, const float &value) {
     __inline Vol() {}
   } newdest;
 
+  oldval.t  = *dest;
   newdest.t = dest;
 
   do {
-    oldval.t = *dest;
     newval.t = oldval.t - value;
   } while (oldval.i !=
            _InterlockedCompareExchange(newdest.i, newval.i, oldval.i));
@@ -600,10 +606,10 @@ __inline static double Sub(double volatile *const dest, const double &value) {
     __inline Vol() {}
   } newdest;
 
+  oldval.t  = *dest;
   newdest.t = dest;
 
   do {
-    oldval.t = *dest;
     newval.t = oldval.t - value;
   } while (oldval.i !=
            _InterlockedCompareExchange64(newdest.i, newval.i, oldval.i));
@@ -617,58 +623,69 @@ __inline T CompareExchange(
     T volatile *const dest, const T &compare,
     typename std::enable_if<sizeof(T) == sizeof(Impl::cas128_t),
                             const T &>::type value) {
-  T oldValue = *reinterpret_cast<T *>(dest);
-  // void* localValue = (void*)&value;
-
-#if defined(__MINGW64__)
-  long long localCompare = (long long)&compare;
-#else
-  long long *localCompare = (long long *)&compare;
-#endif
-
-  union U {
+  union V {
     Impl::cas128_t i;
     T t;
-    __inline U() {}
-  } newval;
+    __inline V() {}
+  } newval, oldval, assume;
 
   newval.t = value;
+  assume.t = compare;
+
+  union Vol {
+    Impl::cas128_t volatile *i;
+    long long volatile *l;
+    T volatile *t;
+    __inline Vol() {}
+  } newdest;
+
+  oldval.t  = *dest;
+  newdest.t = dest;
 
   do {
     ;
-  } while (_InterlockedCompareExchange128(
-               (long long volatile *)dest, *(long long *)&newval.i.upper,
-               *(long long *)&newval.i.lower, localCompare) == 0);
+  } while (_InterlockedCompareExchange128(newdest.l, newval.i.upper,
+                                          newval.i.lower, &assume.i) == 0);
 
-  return oldValue;
+  return oldval.t;
 }
 
 template <typename T>
 __inline T Add(T volatile *const dest,
                typename std::enable_if<sizeof(T) == sizeof(Impl::cas128_t),
                                        const T &>::type value) {
-  const T oldValue = *reinterpret_cast<T *>(dest);
-  const T newVal   = (*dest + value);
+  union V {
+    Impl::cas128_t i;
+    T t;
+    __inline V() {}
+  } newval, oldval;
+
+  oldval.t = *dest;
 
   do {
-    ;
-  } while (oldValue != InterlockedCompareExchange(dest, newVal, oldValue));
+    newval.t = oldval.t + value;
+  } while (oldval.i != CompareExchange(dest, newval.i, oldval.i));
 
-  return *(T *)&oldValue;
+  return oldval.t;
 }
 
 template <typename T>
 __inline T Sub(T volatile *const dest,
                typename std::enable_if<sizeof(T) == sizeof(Impl::cas128_t),
                                        const T &>::type value) {
-  const T oldValue = *reinterpret_cast<T *>(dest);
-  const T newVal   = (*dest - value);
+  union V {
+    Impl::cas128_t i;
+    T t;
+    __inline V() {}
+  } newval, oldval;
+
+  oldval.t = *dest;
 
   do {
-    ;
-  } while (oldValue != InterlockedCompareExchange(dest, newVal, oldValue));
+    newval.t = oldval.t - value;
+  } while (oldval.i != CompareExchange(dest, newval.i, oldval.i));
 
-  return *(T *)&oldValue;
+  return oldval.t;
 }
 
 // TODO
@@ -693,6 +710,7 @@ __inline T Exchange(
 #pragma endregion
 
 }  // namespace Windows
+
 }  // namespace Kokkos
 #endif
 #endif
