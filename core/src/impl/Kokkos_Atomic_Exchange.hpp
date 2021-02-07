@@ -368,7 +368,7 @@ __inline__ __device__ __host__ int atomic_exchange(volatile int* const dest,
   // return __iAtomicExch( (int*) dest , val );
   return atomicExch((int*)dest, val);
 #else
-  Windows::Exchange(dest, val);
+  return Windows::Exchange(dest, val);
 #endif
 }
 
@@ -378,7 +378,7 @@ __inline__ __device__ __host__ unsigned int atomic_exchange(
   // return __uAtomicExch( (unsigned int*) dest , val );
   return atomicExch((unsigned int*)dest, val);
 #else
-  Windows::Exchange(dest, val);
+  return Windows::Exchange(dest, val);
 #endif
 }
 
@@ -389,7 +389,7 @@ __inline__ __device__ __host__ unsigned long long int atomic_exchange(
   // return __ullAtomicExch( (unsigned long long*) dest , val );
   return atomicExch((unsigned long long*)dest, val);
 #else
-  Windows::Exchange((unsigned long long*)dest, val);
+  return Windows::Exchange((unsigned long long*)dest, val);
 #endif
 }
 
