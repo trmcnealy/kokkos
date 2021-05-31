@@ -68,6 +68,10 @@
 namespace Kokkos {
 
 namespace Windows {
+    
+#if defined(MemoryBarrier)
+#undef MemoryBarrier 
+#endif
 
 #if defined(WIN64) || defined(_WIN64) || defined(_AMD64) || \
     defined(_AMD64_) || defined(__x86_64) || defined(__x86_64__)
@@ -691,20 +695,20 @@ __inline T Sub(T volatile *const dest,
 // TODO
 template <typename T>
 __inline T Exchange(
-    void *volatile *dest,
-    typename std::enable_if<(sizeof(T) != 4) && (sizeof(T) != 8), void *>::type
-        &val) {
-  while (!Impl::lock_address_host_space(*dest))
+    T volatile *const dest,
+    typename std::enable_if<sizeof(T) == sizeof(Impl::cas128_t),
+                                       const T &>::type value) {
+  while (!Impl::lock_address_host_space((void*)dest))
     ;
   MemoryBarrier();
 
-  const long long oldValue = *reinterpret_cast<long long *>(*dest);
-  *dest                    = val;
+  T return_val = *dest;
+  *dest       = val;
 
   MemoryBarrier();
-  Impl::unlock_address_host_space(*dest);
+  Impl::unlock_address_host_space((void*)dest);
 
-  return oldValue;
+  return return_val;
 }
 
 #pragma endregion
